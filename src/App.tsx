@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 // Import types
-import { Percorso, Documento, Scadenza, Messaggio, PrioritaScadenza } from "./types";
+import { Percorso, Documento, Scadenza, Messaggio, PrioritaScadenza, SpidSessionState } from "./types";
 
 // Import mock data
 import {
@@ -23,17 +23,51 @@ import { Documenti } from "./pages/Documenti";
 import { Assistente } from "./pages/Assistente";
 import { Scadenze } from "./pages/Scadenze";
 import { Impostazioni } from "./pages/Impostazioni";
+import { ProfiloDigitale } from "./pages/ProfiloDigitale";
+import { SpidService } from "./services/spidService";
 
 function App() {
   // Navigation State
   const [currentPage, setCurrentPage] = useState<string>("dashboard");
   const [selectedPercorsoId, setSelectedPercorsoId] = useState<string | null>(null);
 
+  // SPID Session State
+  const [spidSession, setSpidSession] = useState<SpidSessionState>({
+    isAuthenticated: false
+  });
+
   // Entities States
   const [percorsi, setPercorsi] = useState<Percorso[]>(PERCORSI_MOCK);
   const [documenti, setDocumenti] = useState<Documento[]>(DOCUMENTI_MOCK);
   const [scadenze, setScadenze] = useState<Scadenza[]>(SCADENZE_MOCK);
   const [messaggi, setMessaggi] = useState<Messaggio[]>(ASSISTENTE_INITIAL_MESSAGGI);
+
+  // Catch redirected SPID token from local Auth companion
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      // Clear token from URL address bar for aesthetics and security
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      const fetchProfile = async () => {
+        try {
+          const profile = await SpidService.getCittadinoProfile(token);
+          setSpidSession({
+            isAuthenticated: true,
+            token,
+            profilo: profile,
+            dataAutenticazione: new Date().toISOString(),
+            scadenzaSessione: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+          });
+          setCurrentPage("profilo");
+        } catch (err) {
+          console.error("Errore nel recupero del profilo tramite token:", err);
+        }
+      };
+      fetchProfile();
+    }
+  }, []);
 
   // Active titles based on currentPage
   const getPageTitleAndSubtitle = () => {
@@ -56,6 +90,8 @@ function App() {
         return { title: "Date e Scadenze Utili", subtitle: "Promemoria per procedimenti ed adempimenti" };
       case "impostazioni":
         return { title: "Opzioni e Profilo Locale", subtitle: "Configura il comportamento dell'applicazione" };
+      case "profilo":
+        return { title: "Profilo Digitale", subtitle: "Identità SPID / CIE • Stato di autenticazione" };
       default:
         return { title: "Guida Servizi", subtitle: "Repubblica Italiana" };
     }
@@ -497,6 +533,14 @@ function App() {
           onToggleScadenza={handleToggleScadenza}
           onNavigateToPercorso={handleSelectPercorso}
           onAddScadenza={handleAddScadenza}
+        />
+      )}
+
+      {currentPage === "profilo" && (
+        <ProfiloDigitale
+          session={spidSession}
+          onLoginSuccess={(newSession) => setSpidSession(newSession)}
+          onLogout={() => setSpidSession({ isAuthenticated: false })}
         />
       )}
 

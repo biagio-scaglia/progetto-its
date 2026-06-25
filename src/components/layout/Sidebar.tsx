@@ -8,7 +8,8 @@ import {
   ClockIcon, 
   GearIcon,
   DoubleArrowLeftIcon,
-  DoubleArrowRightIcon
+  DoubleArrowRightIcon,
+  PersonIcon
 } from "@radix-ui/react-icons";
 
 export interface SidebarProps {
@@ -31,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "documenti", label: "I miei Documenti", icon: <ArchiveIcon className="sidebar-nav-item-icon" /> },
     { id: "assistente", label: "Chiedi Guida", icon: <ChatBubbleIcon className="sidebar-nav-item-icon" /> },
     { id: "scadenze", label: "Scadenze", icon: <ClockIcon className="sidebar-nav-item-icon" /> },
+    { id: "profilo", label: "Profilo Digitale", icon: <PersonIcon className="sidebar-nav-item-icon" /> },
     { id: "impostazioni", label: "Impostazioni", icon: <GearIcon className="sidebar-nav-item-icon" /> },
   ];
 
