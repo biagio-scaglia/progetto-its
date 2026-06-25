@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 
@@ -55,6 +55,53 @@ function App() {
   // Stato della Navigazione locale della UI
   const [currentPage, setCurrentPage] = useState<string>("dashboard");
   const [selectedPercorsoId, setSelectedPercorsoId] = useState<string | null>(null);
+
+  // Listener globale per scorciatoie da tastiera
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Non attivare le scorciatoie se l'utente sta scrivendo in un campo di input
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === "INPUT" ||
+          activeEl.tagName === "TEXTAREA" ||
+          activeEl.getAttribute("contenteditable") === "true")
+      ) {
+        return;
+      }
+
+      // Alt + numero da 1 a 8 per selezionare le schede
+      if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        const key = e.key;
+        const pageMap: { [key: string]: string } = {
+          "1": "dashboard",
+          "2": "pratiche",
+          "3": "servizi",
+          "4": "documenti",
+          "5": "assistente",
+          "6": "scadenze",
+          "7": "profilo",
+          "8": "impostazioni"
+        };
+
+        if (pageMap[key]) {
+          e.preventDefault();
+          handleNavigate(pageMap[key]);
+        }
+      }
+
+      // Tasto Escape per tornare indietro se siamo in dettaglio pratica
+      if (e.key === "Escape" && currentPage === "dettaglio-pratica") {
+        e.preventDefault();
+        handleNavigate("pratiche");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentPage]);
 
   // Mappa i titoli e sottotitoli delle pagine per la barra superiore
   const getPageTitleAndSubtitle = () => {

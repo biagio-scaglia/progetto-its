@@ -104,19 +104,34 @@ export const PaginaGuida: React.FC<PaginaGuidaProps> = ({
         </Alert>
       )}
 
-      {/* Grid Layout Guida */}
-      <div className="grid-dashboard">
+      {/* Stacked Layout Guida (Singola Colonna) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
         
-        {/* Colonna Sinistra (Passaggi da seguire) */}
-        <section className="col-8" aria-label="Passaggi della guida e documenti necessari">
-          {/* Componente passi guidati */}
+        {/* Note / Suggerimenti della Guida */}
+        {percorso.note && (
+          <div className="card w-full" style={{ backgroundColor: "var(--color-warning-bg)", borderLeft: "6px solid var(--color-warning)" }}>
+            <div className="card-body" style={{ padding: "var(--space-lg)" }}>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-warning)", display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                <InfoCircledIcon style={{ width: "24px", height: "24px" }} /> Suggerimenti importanti per questo servizio
+              </h3>
+              <p style={{ fontSize: "1.05rem", color: "var(--color-text-primary)", lineHeight: "1.5" }}>
+                {percorso.note}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Passaggi della guida */}
+        <section aria-label="Passaggi da seguire">
           <StepList 
             percorso={percorso} 
             onStepBackward={onStepBackward} 
             onStepForward={onStepForward} 
           />
+        </section>
 
-          {/* Componente Checklist documenti */}
+        {/* Checklist documenti */}
+        <section aria-label="Documenti necessari">
           <DocumentChecklist 
             percorso={percorso} 
             documenti={documenti} 
@@ -125,42 +140,11 @@ export const PaginaGuida: React.FC<PaginaGuidaProps> = ({
           />
         </section>
 
-        {/* Colonna Destra */}
-        <section className="col-4" aria-label="Note di sicurezza e ufficio competente">
-          {/* Note della Guida */}
-          {percorso.note && (
-            <div className="card w-full mb-lg" style={{ backgroundColor: "var(--color-warning-bg)", border: "1px solid var(--color-warning-border)" }}>
-              <div className="card-body" style={{ padding: "var(--space-md)" }}>
-                <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--color-warning)", display: "flex", alignItems: "center", gap: "6px", marginBottom: "var(--space-xs)" }}>
-                  <InfoCircledIcon /> Suggerimenti Utili
-                </h3>
-                <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", lineHeight: "1.4" }}>
-                  {percorso.note}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Componente EnteInfo */}
+        {/* Informazioni Ufficio Competente */}
+        <section aria-label="Ufficio ed Ente Competente">
           <EnteInfo percorso={percorso} />
-
-          {/* Azioni di Guida */}
-          <div className="card w-full">
-            <div className="card-header">
-              <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-dark-blue)" }}>
-                Opzioni Guida
-              </h3>
-            </div>
-            <div className="card-body" style={{ padding: "var(--space-md)", display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
-              <button 
-                className="btn btn-secondary w-full"
-                onClick={() => alert("Per completare l'istanza devi accedere al portale esterno. Questa guida raccoglie solo le informazioni utili.")}
-              >
-                Esporta checklist in PDF
-              </button>
-            </div>
-          </div>
         </section>
+
       </div>
     </div>
   );

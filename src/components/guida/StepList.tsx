@@ -66,8 +66,8 @@ export const StepList: React.FC<StepListProps> = ({
               
               <div style={{ flex: 1 }}>
                 <h4 style={{ 
-                  fontSize: "1rem", 
-                  fontWeight: 700, 
+                  fontSize: "1.2rem", 
+                  fontWeight: 800, 
                   color: isActive ? "var(--color-primary)" : "var(--color-text-primary)",
                   textDecoration: isCompleted ? "line-through" : "none"
                 }}>
@@ -76,18 +76,17 @@ export const StepList: React.FC<StepListProps> = ({
                 
                 {isActive && (
                   <div style={{ marginTop: "var(--space-sm)" }}>
-                    <p style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)", lineHeight: "1.4", marginBottom: "var(--space-md)" }}>
+                    <p style={{ fontSize: "1.05rem", color: "var(--color-text-secondary)", lineHeight: "1.5", marginBottom: "var(--space-md)" }}>
                       {percorso.passiDettagli[index]}
                     </p>
                     
-                    <div className="flex gap-sm">
+                    <div className="flex gap-sm" style={{ flexWrap: "wrap" }}>
                       {percorso.passoCorrente > 0 && (
                         <button 
                           className="btn btn-secondary" 
                           onClick={() => onStepBackward(percorso.id)}
-                          style={{ padding: "6px 12px", fontSize: "0.85rem" }}
                         >
-                          ← Indietro
+                          Torna al passaggio precedente
                         </button>
                       )}
                       
@@ -95,17 +94,16 @@ export const StepList: React.FC<StepListProps> = ({
                         <button 
                           className="btn btn-primary" 
                           onClick={() => onStepForward(percorso.id)}
-                          style={{ padding: "6px 12px", fontSize: "0.85rem" }}
                         >
-                          Segna come Completato e Procedi →
+                          Ho completato questo passaggio, vai avanti
                         </button>
                       ) : (
                         <button 
                           className="btn btn-primary" 
                           onClick={() => onStepForward(percorso.id)}
-                          style={{ padding: "6px 12px", fontSize: "0.85rem", backgroundColor: "var(--color-success)" }}
+                          style={{ backgroundColor: "var(--color-success)" }}
                         >
-                          Concludi il percorso di guida <CheckIcon />
+                          Ho finito tutti i passaggi di questa guida
                         </button>
                       )}
                     </div>

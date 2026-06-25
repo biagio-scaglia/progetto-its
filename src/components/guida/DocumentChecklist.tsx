@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Percorso, Documento } from "../../types";
-import { CheckIcon, UploadIcon, FileTextIcon, TrashIcon } from "@radix-ui/react-icons";
+import { FileTextIcon } from "@radix-ui/react-icons";
 
 interface DocumentChecklistProps {
   percorso: Percorso;
@@ -18,24 +18,6 @@ export const DocumentChecklist: React.FC<DocumentChecklistProps> = ({
   onUploadDocument,
   onRemoveDocument
 }) => {
-  const [dragActive, setDragActive] = useState<{ [key: string]: boolean }>({});
-
-  const handleDrag = (e: React.DragEvent, id: string, active: boolean) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(prev => ({ ...prev, [id]: active }));
-  };
-
-  const handleDrop = (e: React.DragEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(prev => ({ ...prev, [id]: false }));
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      onUploadDocument(percorso.id, id, file.name);
-    }
-  };
 
   const simulateUpload = (itemId: string) => {
     const mockFileNames = {
@@ -57,14 +39,14 @@ export const DocumentChecklist: React.FC<DocumentChecklistProps> = ({
   return (
     <div className="card w-full">
       <div className="card-header">
-        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)" }}>
-          Documenti Necessari (Checklist di controllo)
+        <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--color-dark-blue)" }}>
+          Documenti da preparare
         </h3>
       </div>
       
-      <div className="card-body">
-        <p style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-md)" }}>
-          Verifica di possedere tutti i documenti utili prima di accedere al portale istituzionale. Puoi caricare i file localmente per spuntare la checklist.
+      <div className="card-body" style={{ padding: "var(--space-lg)" }}>
+        <p style={{ fontSize: "1.05rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-md)" }}>
+          Controlla di avere questi documenti prima di procedere con la domanda ufficiale sul sito dell'ente.
         </p>
         
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
@@ -75,35 +57,35 @@ export const DocumentChecklist: React.FC<DocumentChecklistProps> = ({
               <div 
                 key={item.id} 
                 style={{ 
-                  border: "1px solid var(--color-border)", 
+                  border: "2px solid var(--color-border)", 
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-md)",
-                  backgroundColor: item.completato ? "rgba(0, 135, 90, 0.01)" : "transparent"
+                  backgroundColor: item.completato ? "var(--color-success-bg)" : "var(--color-surface)"
                 }}
               >
-                <div className="flex justify-between items-start" style={{ gap: "var(--space-md)", flexWrap: "wrap", marginBottom: "var(--space-sm)" }}>
+                <div className="flex justify-between items-center" style={{ gap: "var(--space-md)", flexWrap: "wrap", marginBottom: "var(--space-sm)" }}>
                   <div>
-                    <div className="flex items-center gap-xs">
-                      <h4 style={{ fontSize: "0.95rem", fontWeight: 700 }}>{item.testo}</h4>
+                    <div className="flex items-center gap-sm">
+                      <h4 style={{ fontSize: "1.1rem", fontWeight: 800 }}>{item.testo}</h4>
                       {item.obbligatorio ? (
-                        <span style={{ fontSize: "0.75rem", color: "var(--color-danger)", fontWeight: 700, backgroundColor: "var(--color-danger-bg)", padding: "2px 6px", borderRadius: "3px" }}>
+                        <span style={{ fontSize: "0.85rem", color: "var(--color-danger)", fontWeight: 700, backgroundColor: "var(--color-danger-bg)", padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-danger-border)" }}>
                           Obbligatorio
                         </span>
                       ) : (
-                        <span style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", fontWeight: 600, backgroundColor: "var(--color-background)", padding: "2px 6px", borderRadius: "3px" }}>
-                          Consigliato
+                        <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", fontWeight: 700, backgroundColor: "var(--color-gray-badge-bg)", padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}>
+                          Facoltativo
                         </span>
                       )}
                     </div>
                   </div>
 
                   {item.completato ? (
-                    <span style={{ color: "var(--color-success)", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "4px" }}>
-                      <CheckIcon /> Pronto
+                    <span style={{ color: "var(--color-success)", fontWeight: 800, fontSize: "1rem", display: "flex", alignItems: "center", gap: "6px" }}>
+                      Documento Pronto
                     </span>
                   ) : (
-                    <span style={{ color: "var(--color-warning)", fontWeight: 700, fontSize: "0.85rem" }}>
-                      Da raccogliere
+                    <span style={{ color: "var(--color-warning)", fontWeight: 800, fontSize: "1rem" }}>
+                      Da aggiungere
                     </span>
                   )}
                 </div>
@@ -112,17 +94,20 @@ export const DocumentChecklist: React.FC<DocumentChecklistProps> = ({
                   <div 
                     className="flex justify-between items-center"
                     style={{ 
-                      backgroundColor: "var(--color-background)", 
-                      padding: "var(--space-sm) var(--space-md)", 
+                      backgroundColor: "var(--color-surface)", 
+                      padding: "var(--space-md)", 
                       borderRadius: "var(--radius-sm)",
-                      border: "1px dashed var(--color-border)"
+                      border: "1px solid var(--color-border)",
+                      marginTop: "var(--space-sm)",
+                      flexWrap: "wrap",
+                      gap: "var(--space-md)"
                     }}
                   >
                     <div className="flex items-center gap-sm">
-                      <FileTextIcon style={{ color: "var(--color-primary)" }} />
+                      <FileTextIcon style={{ color: "var(--color-primary)", width: "24px", height: "24px" }} />
                       <div>
-                        <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>{uploadedDoc.nome}</span>
-                        <span style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", marginLeft: "8px" }}>
+                        <span style={{ fontSize: "1rem", fontWeight: 700 }}>{uploadedDoc.nome}</span>
+                        <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginLeft: "8px" }}>
                           ({uploadedDoc.dimensione})
                         </span>
                       </div>
@@ -130,48 +115,35 @@ export const DocumentChecklist: React.FC<DocumentChecklistProps> = ({
                     
                     {percorso.stato !== "completato" && percorso.stato !== "scaduto" && (
                       <button
+                        className="btn btn-secondary"
                         onClick={() => onRemoveDocument(percorso.id, item.id)}
                         style={{
-                          background: "none",
-                          border: "none",
                           color: "var(--color-danger)",
-                          cursor: "pointer",
-                          padding: "4px",
-                          display: "inline-flex"
+                          borderColor: "var(--color-danger)",
+                          fontSize: "0.95rem",
+                          padding: "8px 16px",
+                          minHeight: "36px"
                         }}
-                        title="Rimuovi"
                         aria-label={`Rimuovi ${uploadedDoc.nome}`}
                       >
-                        <TrashIcon />
+                        Rimuovi file
                       </button>
                     )}
                   </div>
                 ) : (
                   percorso.stato !== "completato" && percorso.stato !== "scaduto" ? (
-                    <div 
-                      onDragEnter={(e) => handleDrag(e, item.id, true)}
-                      onDragOver={(e) => handleDrag(e, item.id, true)}
-                      onDragLeave={(e) => handleDrag(e, item.id, false)}
-                      onDrop={(e) => handleDrop(e, item.id)}
-                      style={{ 
-                        border: dragActive[item.id] ? "2px dashed var(--color-primary)" : "2px dashed var(--color-border)", 
-                        borderRadius: "var(--radius-sm)",
-                        padding: "var(--space-sm) var(--space-md)",
-                        textAlign: "center",
-                        backgroundColor: dragActive[item.id] ? "var(--color-primary-light)" : "var(--color-background)",
-                        cursor: "pointer",
-                        transition: "all var(--transition-fast)"
-                      }}
-                      onClick={() => simulateUpload(item.id)}
-                    >
-                      <UploadIcon style={{ color: "var(--color-text-secondary)", marginBottom: "2px" }} />
-                      <p style={{ fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>
-                        Trascina qui il file o <strong>clicca per spuntarlo</strong>
-                      </p>
+                    <div style={{ marginTop: "var(--space-sm)" }}>
+                      <button 
+                        className="btn btn-secondary w-full"
+                        style={{ display: "flex", justifyContent: "center" }}
+                        onClick={() => simulateUpload(item.id)}
+                      >
+                        Seleziona e aggiungi questo documento
+                      </button>
                     </div>
                   ) : (
-                    <p style={{ fontSize: "0.85rem", color: "var(--color-text-disabled)", fontStyle: "italic" }}>
-                      Percorso di guida concluso.
+                    <p style={{ fontSize: "0.95rem", color: "var(--color-text-disabled)", fontStyle: "italic", marginTop: "var(--space-sm)" }}>
+                      Questa guida è stata completata.
                     </p>
                   )
                 )}

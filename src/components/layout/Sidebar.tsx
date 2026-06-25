@@ -7,8 +7,6 @@ import {
   ChatBubbleIcon, 
   ClockIcon, 
   GearIcon,
-  DoubleArrowLeftIcon,
-  DoubleArrowRightIcon,
   PersonIcon
 } from "@radix-ui/react-icons";
 
@@ -21,9 +19,7 @@ export interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
-  onNavigate,
-  isCollapsed,
-  onToggleCollapse
+  onNavigate
 }) => {
   const menuItems = [
     { id: "dashboard", label: "Home", icon: <HomeIcon className="sidebar-nav-item-icon" /> },
@@ -37,11 +33,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className={`app-sidebar ${isCollapsed ? "collapsed" : ""}`} aria-label="Navigazione principale">
+    <aside className="app-sidebar" aria-label="Navigazione principale">
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon" aria-hidden="true">IT</div>
-          {!isCollapsed && <span style={{ marginLeft: "4px" }}>Servizi Digitali</span>}
+          <span style={{ marginLeft: "4px" }}>Servizi Digitali</span>
         </div>
       </div>
       
@@ -53,25 +49,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
               key={item.id}
               onClick={() => onNavigate(item.id)}
               className={`sidebar-nav-item ${isActive ? "active" : ""}`}
-              title={isCollapsed ? item.label : undefined}
               aria-current={isActive ? "page" : undefined}
             >
               {item.icon}
-              {!isCollapsed && <span>{item.label}</span>}
+              <span>{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="sidebar-footer">
-        <button
-          onClick={onToggleCollapse}
-          className="sidebar-toggle-btn"
-          aria-label={isCollapsed ? "Espandi barra laterale" : "Riduci barra laterale"}
-          title={isCollapsed ? "Espandi navigazione" : "Comprimi navigazione"}
-        >
-          {isCollapsed ? <DoubleArrowRightIcon /> : <DoubleArrowLeftIcon />}
-        </button>
+      <div className="sidebar-footer" style={{ padding: "var(--space-md)", borderTop: "1px solid rgba(255, 255, 255, 0.1)", fontSize: "0.85rem", color: "rgba(255, 255, 255, 0.75)" }}>
+        <p style={{ fontWeight: 700, marginBottom: "6px", color: "#ffffff" }}>Tasti di scelta rapida:</p>
+        <p style={{ lineHeight: "1.3" }}>
+          Premi <kbd style={{ background: "rgba(255, 255, 255, 0.2)", padding: "2px 4px", borderRadius: "3px", fontFamily: "monospace" }}>Alt</kbd> + numero (da 1 a 8) per cambiare pagina.
+        </p>
+        <p style={{ marginTop: "4px", lineHeight: "1.3" }}>
+          Premi <kbd style={{ background: "rgba(255, 255, 255, 0.2)", padding: "2px 4px", borderRadius: "3px", fontFamily: "monospace" }}>Esc</kbd> per tornare indietro.
+        </p>
       </div>
     </aside>
   );

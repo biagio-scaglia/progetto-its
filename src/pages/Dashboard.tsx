@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Percorso, Scadenza, Documento } from "../types";
 import { Alert } from "../components/ui/Alert";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
-import { SearchBanner } from "../components/dashboard/SearchBanner";
 import { SummaryWidgets } from "../components/dashboard/SummaryWidgets";
 import { ActiveGuidesList } from "../components/dashboard/ActiveGuidesList";
 import { RecommendedSteps } from "../components/dashboard/RecommendedSteps";
@@ -26,8 +25,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onNavigate,
   onSelectPercorso
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-
   const percorsiAttivi = percorsi.filter(p => p.stato === "in_corso" || p.stato === "da_verificare").length;
   const scadenzePendenti = scadenze.filter(s => !s.completata).length;
   const totalDocumenti = documenti.length;
@@ -45,53 +42,63 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return d.getDate();
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      onNavigate("servizi");
-    }
-  };
-
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
       {/* Intestazione Orientativa */}
-      <div className="page-header" style={{ marginBottom: "var(--space-lg)" }}>
+      <div className="page-header" style={{ marginBottom: 0 }}>
         <div>
-          <h2 className="page-title">Guida ai Servizi Pubblici</h2>
-          <p className="page-subtitle">Il tuo compagno digitale per orientarti tra i portali dello Stato (INPS, ANPR) e completare i passaggi corretti.</p>
+          <h2 className="page-title" style={{ fontSize: "2rem" }}>Benvenuto nella tua Area Personale</h2>
+          <p className="page-subtitle" style={{ fontSize: "1.1rem", marginTop: "6px" }}>
+            Questa applicazione ti aiuta a preparare i documenti e a completare in autonomia i percorsi per i servizi pubblici.
+          </p>
         </div>
       </div>
 
       {/* Avviso di integrazione urgente */}
       {percorsoUrgente && (
-        <Alert variant="warning" title="Azione Richiesta: Documento da integrare">
-          Nel percorso <strong>{percorsoUrgente.titolo}</strong> è emersa una richiesta di integrazione sul portale ufficiale dell'ente. 
+        <Alert variant="warning" title="Documento da integrare - Azione necessaria">
+          Nel percorso <strong>{percorsoUrgente.titolo}</strong> mancano dei documenti richiesti dall'ente.
           <button 
             onClick={() => onSelectPercorso(percorsoUrgente.id)}
             style={{
               background: "none",
               border: "none",
               color: "var(--color-primary)",
-              fontWeight: 700,
+              fontWeight: "bold",
               cursor: "pointer",
               padding: 0,
-              marginLeft: "10px",
-              textDecoration: "underline"
+              marginLeft: "12px",
+              textDecoration: "underline",
+              fontSize: "1.05rem"
             }}
           >
-            Vedi cosa fare
+            Apri percorso per completare
           </button>
         </Alert>
       )}
 
-      {/* Barra di ricerca centrale */}
-      <SearchBanner 
-        searchQuery={searchQuery} 
-        setSearchQuery={setSearchQuery} 
-        onSubmit={handleSearchSubmit} 
-      />
+      {/* Pulsante grande per trovare nuove guide */}
+      <div 
+        className="card clickable" 
+        onClick={() => onNavigate("servizi")}
+        style={{ 
+          padding: "var(--space-lg)", 
+          border: "2px solid var(--color-primary)", 
+          backgroundColor: "var(--color-primary-light)",
+          cursor: "pointer"
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)" }}>
+          <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--color-primary)" }}>
+            Hai bisogno di iniziare una nuova pratica?
+          </h3>
+          <p style={{ fontSize: "1.05rem", color: "var(--color-text-secondary)" }}>
+            Clicca qui per visualizzare l'elenco delle guide disponibili per la Carta d'Identità, il Cambio di Residenza e molto altro.
+          </p>
+        </div>
+      </div>
 
-      {/* Widget statistici */}
+      {/* Widget statistici / Link di Navigazione */}
       <SummaryWidgets 
         percorsiAttivi={percorsiAttivi} 
         scadenzePendenti={scadenzePendenti} 
@@ -99,73 +106,35 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onNavigate={onNavigate} 
       />
 
-      {/* Griglia della Dashboard */}
-      <div className="grid-dashboard mt-lg">
-        {/* Colonna Sinistra */}
-        <section className="col-8" aria-label="I miei percorsi di guida">
-          {/* Lista guide attive */}
-          <ActiveGuidesList 
-            activeGuides={activeGuides} 
-            onNavigate={onNavigate} 
-            onSelectPercorso={onSelectPercorso} 
-          />
+      {/* Lista guide attive */}
+      <ActiveGuidesList 
+        activeGuides={activeGuides} 
+        onNavigate={onNavigate} 
+        onSelectPercorso={onSelectPercorso} 
+      />
 
-          {/* Box Spiegazione Filosofia Software */}
-          <div className="card w-full" style={{ borderLeft: "5px solid var(--color-primary)" }}>
-            <div className="card-body" style={{ display: "flex", gap: "var(--space-md)", alignItems: "flex-start" }}>
-              <InfoCircledIcon style={{ width: "24px", height: "24px", color: "var(--color-primary)", flexShrink: 0, marginTop: "2px" }} />
-              <div>
-                <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-dark-blue)", marginBottom: "4px" }}>
-                  Come funziona questo software?
-                </h4>
-                <p style={{ color: "var(--color-text-secondary)", fontSize: "0.9rem", lineHeight: "1.4" }}>
-                  Questa applicazione desktop è una <strong>guida privata e personale</strong> che ti aiuta a preparare i documenti necessari e a seguire l'ordine corretto dei passaggi per ciascun servizio pubblico. 
-                  Non invia dati finti e non sostituisce i siti della PA: ti fornisce spiegazioni chiare e link rapidi per accedere in sicurezza ai portali ufficiali dell'INPS, dell'ANPR o del tuo Comune.
-                </p>
-              </div>
-            </div>
+      {/* Prossimi Passi consigliati */}
+      <RecommendedSteps 
+        scadenze={scadenze} 
+        formatMonth={formatMonth} 
+        formatDay={formatDay} 
+      />
+
+      {/* Box Spiegazione Filosofia Software */}
+      <div className="card w-full" style={{ borderLeft: "6px solid var(--color-primary)", backgroundColor: "var(--color-surface)" }}>
+        <div className="card-body" style={{ display: "flex", gap: "var(--space-md)", alignItems: "flex-start", padding: "var(--space-lg)" }}>
+          <InfoCircledIcon style={{ width: "32px", height: "32px", color: "var(--color-primary)", flexShrink: 0 }} />
+          <div>
+            <h4 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-dark-blue)", marginBottom: "8px" }}>
+              Informazioni utili sull'applicazione
+            </h4>
+            <p style={{ color: "var(--color-text-secondary)", fontSize: "1.05rem", lineHeight: "1.5" }}>
+              Questo programma è uno strumento privato che risiede interamente sul tuo dispositivo. 
+              Ti serve per raccogliere i documenti necessari e studiare i passaggi prima di fare la domanda. 
+              Ricorda che per inoltrare la domanda ufficiale dovrai sempre collegarti ai portali governativi esterni indicati nelle guide.
+            </p>
           </div>
-        </section>
-
-        {/* Colonna Destra */}
-        <section className="col-4" aria-label="Prossimi passi e servizi consigliati">
-          {/* Prossimi Passi consigliati */}
-          <RecommendedSteps 
-            scadenze={scadenze} 
-            formatMonth={formatMonth} 
-            formatDay={formatDay} 
-          />
-
-          {/* Servizi Popolari */}
-          <div className="card w-full">
-            <div className="card-header">
-              <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-dark-blue)" }}>Guide più cercate</h3>
-            </div>
-            <div className="card-body" style={{ padding: "var(--space-md)", display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
-              <button 
-                className="btn btn-secondary w-full"
-                onClick={() => onNavigate("servizi")}
-                style={{ justifyContent: "space-between", padding: "8px 12px", fontSize: "0.9rem" }}
-              >
-                <span>Cambio Residenza online</span>
-              </button>
-              <button 
-                className="btn btn-secondary w-full"
-                onClick={() => onNavigate("servizi")}
-                style={{ justifyContent: "space-between", padding: "8px 12px", fontSize: "0.9rem" }}
-              >
-                <span>Rilascio della CIE</span>
-              </button>
-              <button 
-                className="btn btn-secondary w-full"
-                onClick={() => onNavigate("assistente")}
-                style={{ justifyContent: "space-between", padding: "8px 12px", fontSize: "0.9rem" }}
-              >
-                <span>Chiedi aiuto all'Assistente</span>
-              </button>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   );

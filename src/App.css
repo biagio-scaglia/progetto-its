@@ -8,75 +8,75 @@
   --font-family: 'Titillium Web', Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   /* Colori Istituzionali */
-  --color-primary: #0066cc;          /* Blu Italia */
-  --color-primary-hover: #0052a3;
-  --color-primary-active: #003d7a;
-  --color-primary-light: #ebf5ff;
+  --color-primary: #0055b3;          /* Blu Italia leggermente più scuro per contrasto */
+  --color-primary-hover: #004494;
+  --color-primary-active: #003370;
+  --color-primary-light: #f0f7ff;
   
-  --color-dark-blue: #002766;        /* Blu scuro istituzionale (ancoraggio) */
-  --color-dark-blue-hover: #001a47;
+  --color-dark-blue: #001a4d;        /* Blu scuro istituzionale per massimo contrasto */
+  --color-dark-blue-hover: #000f33;
   
-  --color-background: #f5f7fa;       /* Sfondo principale dell'app */
-  --color-surface: #ffffff;          /* Superfici di card, pannelli, moduli */
+  --color-background: #f7f9fc;       /* Sfondo principale chiaro e riposante */
+  --color-surface: #ffffff;          
   
-  /* Neutri per testi e bordi */
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #566270;
-  --color-text-disabled: #8a96a3;
-  --color-border: #d1d7e0;
-  --color-border-hover: #a2adb8;
+  /* Neutri per testi e bordi (contrasto elevato per accessibilità) */
+  --color-text-primary: #0f172a;     /* Quasi nero per contrasto WCAG elevato */
+  --color-text-secondary: #2d3748;   /* Grigio molto scuro (contrasto elevato) */
+  --color-text-disabled: #64748b;   /* Grigio medio leggibile */
+  --color-border: #cbd5e1;           /* Bordi più marcati */
+  --color-border-hover: #94a3b8;
   
   /* Stati e Feedback (Semaforici sobri) */
-  --color-success: #00875a;          /* Completata / Successo */
-  --color-success-bg: #e5f6ed;
-  --color-success-border: #a3e0c1;
+  --color-success: #0d6e4b;          /* Verde ad alto contrasto */
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #a7f3d0;
 
-  --color-warning: #a15c00;          /* Scadenza vicina / Da verificare */
-  --color-warning-bg: #fff4e5;
-  --color-warning-border: #ffd19a;
+  --color-warning: #92400e;          /* Arancio/Marrone scuro per contrasto elevato */
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
 
-  --color-danger: #c22c2c;           /* Scaduta / Errore / Pericolo */
-  --color-danger-bg: #fde8e8;
-  --color-danger-border: #f8b4b4;
+  --color-danger: #b91c1c;           /* Rosso ad alto contrasto */
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fca5a5;
 
-  --color-info: #0066cc;             /* Informativo / Bozza */
-  --color-info-bg: #ebf5ff;
-  --color-info-border: #b8dbff;
+  --color-info: #0369a1;             
+  --color-info-bg: #f0f9ff;
+  --color-info-border: #bae6fd;
 
-  --color-gray-badge-bg: #e6ebf0;
-  --color-gray-badge-text: #3c4652;
+  --color-gray-badge-bg: #f1f5f9;
+  --color-gray-badge-text: #1e293b;
 
   /* Focus Indicator (Estremamente visibile e accessibile) */
-  --color-focus: #ff9900;
-  --focus-ring: 3px solid var(--color-focus);
-  --focus-ring-offset: 2px;
+  --color-focus: #ea580c;
+  --focus-ring: 4px solid var(--color-focus);
+  --focus-ring-offset: 3px;
 
-  /* Spaziature standard */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-xxl: 48px;
+  /* Spaziature standard più ampie per ridurre il carico visivo */
+  --space-xs: 8px;
+  --space-sm: 14px;
+  --space-md: 24px;
+  --space-lg: 36px;
+  --space-xl: 48px;
+  --space-xxl: 64px;
 
-  /* Angoli (Sobri, poco arrotondati come da linee guida) */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* Angoli (Arrotondamento chiaro e prevedibile) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 
   /* Ombre (Molto leggere, solo per profondità funzionale) */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 
-  /* Transizioni (Veloci e sobrie) */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s ease;
+  /* Transizioni (Rimosse o velocizzate al massimo per evitare distrazioni visive) */
+  --transition-fast: 0s;
+  --transition-normal: 0s;
   
   /* Layout */
-  --sidebar-width: 260px;
-  --sidebar-collapsed-width: 70px;
-  --topbar-height: 70px;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
+  --topbar-height: 80px;
 }
 
 /* ==========================================================================
@@ -374,14 +374,15 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: 10px var(--space-lg);
-  font-weight: 600;
-  font-size: 0.95rem;
+  padding: 14px 28px;
+  font-weight: 700;
+  font-size: 1.05rem;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast);
+  min-height: 48px;
 }
 
 .btn:disabled {
@@ -408,6 +409,7 @@ button, input, select, textarea {
   background-color: transparent;
   border-color: var(--color-primary);
   color: var(--color-primary);
+  border-width: 2px;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -421,6 +423,7 @@ button, input, select, textarea {
 .btn-tertiary {
   background-color: transparent;
   color: var(--color-text-secondary);
+  text-decoration: underline;
 }
 
 .btn-tertiary:hover:not(:disabled) {
@@ -440,25 +443,29 @@ button, input, select, textarea {
 .btn-back {
   background-color: transparent;
   color: var(--color-primary);
-  font-size: 0.9rem;
-  padding: var(--space-xs) var(--space-sm);
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: var(--space-sm) var(--space-md);
   gap: var(--space-xs);
   border-radius: var(--radius-sm);
+  text-decoration: underline;
 }
 
 .btn-back:hover:not(:disabled) {
-  text-decoration: underline;
   background-color: var(--color-primary-light);
 }
 
 .btn-icon {
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   padding: 0;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   background-color: var(--color-surface);
   color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-icon:hover {
