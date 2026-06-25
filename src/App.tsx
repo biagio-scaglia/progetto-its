@@ -59,8 +59,10 @@ function App() {
   // Mappa i titoli e sottotitoli delle pagine per la barra superiore
   const getPageTitleAndSubtitle = () => {
     switch (currentPage) {
-      case "dashboard":
-        return { title: "Software di Guida ai Servizi", subtitle: "Orientamento per il cittadino • Torino" };
+      case "dashboard": {
+        const localita = profilo?.comune ? (profilo.provincia ? `${profilo.comune} (${profilo.provincia})` : profilo.comune) : "Italia";
+        return { title: "Software di Guida ai Servizi", subtitle: `Orientamento per il cittadino • ${localita}` };
+      }
       case "pratiche":
         return { title: "I tuoi Percorsi di Guida", subtitle: "Stato dei percorsi di compilazione aperti" };
       case "dettaglio-pratica": {

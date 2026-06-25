@@ -41,7 +41,7 @@ export const DocumentChecklist: React.FC<DocumentChecklistProps> = ({
     const mockFileNames = {
       "chk-1-3": "Vecchio_Documento_Scaduto_Scaglia.pdf",
       "chk-2-3": "Modulo_Firma_Responsabilita_Genitore.pdf",
-      "chk-3-1": "Visura_Catastale_Pertinenza_Torino.pdf",
+      "chk-3-1": "Visura_Catastale_Pertinenza.pdf",
       "chk-3-2": "Copia_Carta_Identita_Moglie.pdf"
     };
     
