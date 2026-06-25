@@ -487,57 +487,63 @@ export function useAppState() {
 
         if (query.includes("scadenz") || query.includes("calendar")) {
           const inSospeso = scadenze.filter(s => !s.completata);
-          replyText = `Attualmente hai ${inSospeso.length} scadenze amministrative importanti in sospeso:\n` +
-            inSospeso.map(s => `• ${s.titolo} (entro il ${s.data})`).join("\n") +
-            `\n\nPuoi visualizzare e aggiungere promemoria nel calendario delle scadenze.`;
-          linkInterno = "scadenze";
-          linkTesto = "Apri Calendario Scadenze";
-          suggerimenti = ["Documenti per il Cambio di Residenza", "Come posso rinnovare la CIE?"];
+          if (inSospeso.length > 0) {
+            replyText = `Attualmente hai ${inSospeso.length} scadenze amministrative importanti in sospeso:\n` +
+              inSospeso.map(s => `• ${s.titolo} (entro il ${s.data})`).join("\n") +
+              `\n\nPuoi visualizzare e aggiungere promemoria nel calendario delle scadenze.`;
+            linkInterno = "scadenze";
+            linkTesto = "Apri Calendario Scadenze";
+          } else {
+            replyText = `Non hai scadenze in sospeso registrate in locale. Puoi aggiungerne di nuove nel calendario delle scadenze.`;
+            linkInterno = "scadenze";
+            linkTesto = "Apri Calendario Scadenze";
+          }
+          suggerimenti = ["Come posso iniziare una guida?", "Quali servizi sono disponibili?"];
         } else if (query.includes("cie") || query.includes("carta d'identità") || query.includes("carta identita")) {
-          const cie = percorsi.find(p => p.id === "percorso-1");
+          const cie = percorsi.find(p => p.titolo.toLowerCase().includes("carta") || p.titolo.toLowerCase().includes("cie"));
           if (cie) {
             replyText = `Hai una guida attiva per il rilascio della CIE (${cie.codice}).\n` +
               `Sei al passo: "${cie.passiNomi[cie.passoCorrente]}".\n` +
-              `Il tuo appuntamento in Comune è programmato per il 2 luglio 2026 alle ore 10:30.\n` +
-              `Ricordati di raccogliere tutti i documenti obbligatori (foto tessera e ricevuta PagoPA) prima di recarti allo sportello.`;
-            linkInterno = "percorso-1";
-            linkTesto = "Apri Guida CIE";
+              `Ricordati di raccogliere tutti i documenti obbligatori prima di recarti allo sportello.`;
+            linkInterno = "pratiche";
+            linkTesto = "Vedi i miei percorsi";
           } else {
-            replyText = `Per richiedere la Carta d'Identità Elettronica (CIE), devi prenotare un appuntamento sul portale ministeriale e pagare i diritti di segreteria (€22,21). Vuoi che ti mostri la guida?`;
+            replyText = `Per richiedere la Carta d'Identità Elettronica (CIE), devi prenotare un appuntamento sul portale ministeriale e pagare i diritti di segreteria (€22,21). Puoi avviare il percorso guidato nel catalogo servizi per controllare tutti i passaggi.`;
             linkInterno = "servizi";
             linkTesto = "Sfoglia Catalogo Guide";
           }
           suggerimenti = ["Quali sono le mie scadenze?", "Come cambio residenza?"];
         } else if (query.includes("residenza")) {
-          const res = percorsi.find(p => p.id === "percorso-3");
+          const res = percorsi.find(p => p.titolo.toLowerCase().includes("residenza"));
           if (res) {
             replyText = `Hai aperto la guida al 'Cambio di Residenza online'.\n` +
               `Sei al passo: "${res.passiNomi[res.passoCorrente]}" (${res.passiDettagli[res.passoCorrente]}).\n` +
-              `Per compilare la domanda ufficiale, dovrai accedere con credenziali d'accesso o identità digitale al Portale ANPR Nazionale.`;
-            linkInterno = "percorso-3";
-            linkTesto = "Apri Guida Residenza";
+              `Ricordati di verificare l'elenco dei requisiti ed i documenti catastali necessari.`;
+            linkInterno = "pratiche";
+            linkTesto = "Vedi i miei percorsi";
           } else {
-            replyText = `Il Cambio di Residenza online si compila sul portale nazionale ANPR. Avvia il percorso guida nel catalogo dei servizi per controllare l'elenco dei documenti catastali necessari.`;
+            replyText = `Il Cambio di Residenza online si compila sul portale nazionale ANPR. Avvia il percorso guida nel catalogo dei servizi per controllare l'elenco dei requisiti e dei documenti necessari.`;
             linkInterno = "servizi";
             linkTesto = "Sfoglia Catalogo Guide";
           }
-          suggerimenti = ["Come richiedo l'Assegno Unico?", "Vedi le mie scadenze"];
+          suggerimenti = ["Come richiedo l'Assegno Unico?", "Quali sono le mie scadenze?"];
         } else if (query.includes("assegno") || query.includes("inps")) {
-          const au = percorsi.find(p => p.id === "percorso-2");
-          if (au && au.stato === "da_verificare") {
-            replyText = `Attenzione: Per l'Assegno Unico INPS hai una richiesta di integrazione documenti in sospeso.\n` +
-              `L'INPS richiede il caricamento del modulo di responsabilità firmato dall'altro genitore entro il 15 luglio 2026.`;
-            linkInterno = "percorso-2";
-            linkTesto = "Apri Guida Assegno Unico";
+          const au = percorsi.find(p => p.titolo.toLowerCase().includes("assegno"));
+          if (au) {
+            replyText = `Hai una guida attiva per l'Assegno Unico INPS (${au.codice}).\n` +
+              `Sei al passo: "${au.passiNomi[au.passoCorrente]}".\n` +
+              `Assicurati di verificare se ci sono richieste di integrazione e controlla i documenti necessari.`;
+            linkInterno = "pratiche";
+            linkTesto = "Vedi i miei percorsi";
           } else {
-            replyText = `L'Assegno Unico INPS richiede di compilare la domanda inserendo i dati dei figli e l'IBAN per l'accredito sul portale MyINPS. Ti consiglio di calcolare l'ISEE 2026 per ottenere la quota corretta.`;
+            replyText = `L'Assegno Unico INPS richiede di compilare la domanda inserendo i dati dei figli e l'IBAN per l'accredito sul portale MyINPS. Puoi attivare la guida nel catalogo servizi per organizzare i passaggi.`;
             linkInterno = "servizi";
             linkTesto = "Apri Catalogo Guide";
           }
-          suggerimenti = ["Documenti per il Cambio di Residenza", "Mostrami le mie scadenze"];
+          suggerimenti = ["Come cambio residenza?", "Mostrami le mie scadenze"];
         } else {
-          replyText = `Ho ricevuto la tua richiesta: "${testo}".\n\nIn quanto Software di Guida, posso darti istruzioni pratiche su come procedere. Prova a chiedermi delle "scadenze", del "Cambio di Residenza", della "CIE" o dell'assegno "INPS".`;
-          suggerimenti = ["Quali sono le mie scadenze?", "Come cambio residenza?", "Documenti per la CIE"];
+          replyText = `Ho ricevuto la tua richiesta: "${testo}".\n\nIn quanto Software di Guida, posso darti istruzioni pratiche su come procedere. Prova a chiedermi delle "scadenze", del "Cambio di Residenza", della "CIE" o dell'assegno "INPS" per vedere lo stato delle tue guide o dei servizi disponibili.`;
+          suggerimenti = ["Quali sono le mie scadenze?", "Come cambio residenza?", "Quali servizi sono disponibili?"];
         }
 
         const assistantMsg: Messaggio = {

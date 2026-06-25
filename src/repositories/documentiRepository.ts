@@ -1,5 +1,4 @@
 import { Documento } from "../types";
-import { DOCUMENTI_MOCK } from "../mockData";
 
 const STORAGE_KEY = "servizidigitali_documenti";
 
@@ -14,13 +13,12 @@ export class DocumentiRepository {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (!data) {
-        this.saveDocumenti(DOCUMENTI_MOCK);
-        return DOCUMENTI_MOCK;
+        return [];
       }
       return JSON.parse(data) as Documento[];
     } catch (error) {
       console.error("Errore durante il caricamento dei documenti locali:", error);
-      return DOCUMENTI_MOCK;
+      return [];
     }
   }
 

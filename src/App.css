@@ -334,7 +334,7 @@ button, input, select, textarea {
 
 .app-content {
   flex: 1;
-  padding: var(--space-lg);
+  padding: var(--space-lg) var(--space-lg) 80px var(--space-lg);
   overflow-y: auto;
   outline: none;
 }
@@ -2073,12 +2073,27 @@ button, input, select, textarea {
 .onboarding-error-banner {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
+  gap: var(--space-md);
+  padding: var(--space-md);
   background-color: var(--color-danger-bg);
   border: 1px solid var(--color-danger-border);
+  border-left: 4px solid var(--color-danger);
   border-radius: var(--radius-md);
   color: var(--color-danger);
+  box-shadow: 0 4px 12px rgba(194, 44, 44, 0.15);
+  animation: errorAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: var(--space-md);
+}
+
+@keyframes errorAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .error-icon {

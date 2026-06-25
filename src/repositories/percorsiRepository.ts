@@ -1,5 +1,4 @@
 import { Percorso } from "../types";
-import { PERCORSI_MOCK } from "../mockData";
 
 const STORAGE_KEY = "servizidigitali_percorsi";
 
@@ -14,13 +13,12 @@ export class PercorsiRepository {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (!data) {
-        this.savePercorsi(PERCORSI_MOCK);
-        return PERCORSI_MOCK;
+        return [];
       }
       return JSON.parse(data) as Percorso[];
     } catch (error) {
       console.error("Errore durante il caricamento dei percorsi locali:", error);
-      return PERCORSI_MOCK;
+      return [];
     }
   }
 

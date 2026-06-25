@@ -1,5 +1,4 @@
 import { Scadenza } from "../types";
-import { SCADENZE_MOCK } from "../mockData";
 
 const STORAGE_KEY = "servizidigitali_scadenze";
 
@@ -14,13 +13,12 @@ export class ScadenzeRepository {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (!data) {
-        this.saveScadenze(SCADENZE_MOCK);
-        return SCADENZE_MOCK;
+        return [];
       }
       return JSON.parse(data) as Scadenza[];
     } catch (error) {
       console.error("Errore durante il caricamento delle scadenze locali:", error);
-      return SCADENZE_MOCK;
+      return [];
     }
   }
 

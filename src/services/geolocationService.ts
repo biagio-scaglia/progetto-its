@@ -2,7 +2,7 @@
  * Database offline delle coordinate geografiche dei 110 capoluoghi di provincia italiani.
  * Consente di determinare la vicinanza territoriale senza interrogare API esterne di geocoding su cloud.
  */
-const CITIES_DB = [
+export const CITIES_DB = [
   // Piemonte
   { nome: "Torino", lat: 45.0703, lon: 7.6869, provincia: "TO" },
   { nome: "Alessandria", lat: 44.9129, lon: 8.6154, provincia: "AL" },

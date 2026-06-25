@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { ProfiloUtente } from "../types";
 import { ProfileRepository, contieneEmoji } from "../repositories/profileRepository";
 import { InfoCircledIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon } from "@radix-ui/react-icons";
+import { CITIES_DB } from "../services/geolocationService";
+
+// Estrazione ed ordinamento dei suggerimenti geografici da CITIES_DB
+const LISTA_COMUNI = CITIES_DB.map(c => c.nome).sort((a, b) => a.localeCompare(b, "it"));
+const LISTA_PROVINCE = Array.from(new Set(CITIES_DB.map(c => c.provincia))).sort();
 
 interface OnboardingProps {
   onComplete: (profilo: ProfiloUtente) => void;
@@ -25,19 +30,29 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   // Error States
   const [error, setError] = useState<string | null>(null);
 
+  const triggerError = (msg: string) => {
+    setError(msg);
+    setTimeout(() => {
+      const overlay = document.querySelector(".onboarding-overlay");
+      if (overlay) {
+        overlay.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 50);
+  };
+
   const handleNextStep = () => {
     setError(null);
     
     if (step === 2) {
       // Validazione dati anagrafici
       if (!nome.trim() || !cognome.trim() || !comune.trim()) {
-        setError("I campi Nome, Cognome e Comune di residenza sono obbligatori.");
+        triggerError("I campi Nome, Cognome e Comune di residenza sono obbligatori.");
         return;
       }
       
       // Controllo emoji
       if (contieneEmoji(nome) || contieneEmoji(cognome) || contieneEmoji(comune) || contieneEmoji(provincia) || contieneEmoji(email) || contieneEmoji(cellulare)) {
-        setError("I dati inseriti non possono contenere simboli grafici o emoji.");
+        triggerError("I dati inseriti non possono contenere simboli grafici o emoji.");
         return;
       }
 
@@ -45,7 +60,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       if (email.trim()) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email.trim())) {
-          setError("L'indirizzo email inserito non e' valido.");
+          triggerError("L'indirizzo email inserito non e' valido.");
           return;
         }
       }
@@ -54,14 +69,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       if (cellulare.trim()) {
         const cellRegex = /^\+?[0-9\s\-]+$/;
         if (!cellRegex.test(cellulare.trim())) {
-          setError("Il numero di cellulare inserito non e' valido.");
+          triggerError("Il numero di cellulare inserito non e' valido.");
           return;
         }
       }
 
       // Validazione provincia
       if (provincia.trim() && provincia.trim().length !== 2) {
-        setError("La provincia deve essere indicata con la sigla di 2 lettere.");
+        triggerError("La provincia deve essere indicata con la sigla di 2 lettere.");
         return;
       }
     }
@@ -79,7 +94,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     setError(null);
 
     if (!consensoPrivacy) {
-      setError("E' necessario prestare il consenso al salvataggio locale dei dati per poter utilizzare l'applicazione.");
+      triggerError("E' necessario prestare il consenso al salvataggio locale dei dati per poter utilizzare l'applicazione.");
       return;
     }
 
@@ -101,7 +116,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       ProfileRepository.saveProfile(nuovoProfilo);
       onComplete(nuovoProfilo);
     } catch (err: any) {
-      setError(err.message || "Errore durante il salvataggio dei dati locali.");
+      triggerError(err.message || "Errore durante il salvataggio dei dati locali.");
     }
   };
 
@@ -145,7 +160,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   Questo software ti aiuta a orientarti tra i passaggi procedurali, i documenti necessari e i contatti per completare i servizi demografici e amministrativi italiani.
                 </p>
                 <p>
-                  L'applicazione ti permette di verificare i requisiti per pratiche come il Cambio di Residenza o la richiesta della Carta d'Identità Elettronica, facilitandoti la compilazione sui siti ufficiali.
+                  L'applicazione si avvia come uno spazio di lavoro pulito e privo di dati pre-caricati. Sarai tu a selezionare ed attivare le guide che ti interessano direttamente dal nostro catalogo servizi, ad aggiungere le tue scadenze personali e ad archiviare i tuoi documenti in totale privacy e sicurezza sul tuo dispositivo.
                 </p>
                 
                 <div className="notice-box-onboarding">
@@ -213,8 +228,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                       value={comune}
                       onChange={e => setComune(e.target.value)}
                       placeholder="Es. Roma"
+                      list="ob-comuni-list"
                       required
                     />
+                    <datalist id="ob-comuni-list">
+                      {LISTA_COMUNI.map(com => (
+                        <option key={com} value={com} />
+                      ))}
+                    </datalist>
                     <span className="field-explanation">Consente di identificare il tuo ufficio anagrafico locale.</span>
                   </div>
 
@@ -226,9 +247,15 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                       maxLength={2}
                       className="form-input"
                       value={provincia}
-                      onChange={e => setProvincia(e.target.value)}
+                      onChange={e => setProvincia(e.target.value.toUpperCase())}
                       placeholder="Es. RM"
+                      list="ob-province-list"
                     />
+                    <datalist id="ob-province-list">
+                      {LISTA_PROVINCE.map(prov => (
+                        <option key={prov} value={prov} />
+                      ))}
+                    </datalist>
                   </div>
 
                   <div className="form-group" style={{ gridColumn: "span 2" }}>

@@ -243,10 +243,9 @@ export const ASSISTENTE_INITIAL_MESSAGGI: Messaggio[] = [
     testo: "Gentile cittadino, benvenuto nell'Assistente di Guida ai Servizi Pubblici.\nSono qui per orientarti tra i passaggi burocratici, i documenti necessari e i portali di riferimento (es. INPS, ANPR o portali comunali).\n\nCome posso esserti utile?",
     timestamp: "12:00",
     suggerimenti: [
-      "Documenti per il Cambio di Residenza",
-      "Quali sono i passi per rinnovare la Carta d'Identità?",
-      "Come richiedo l'Assegno Unico?",
-      "Mostrami le prossime scadenze"
+      "Come posso iniziare una guida?",
+      "Quali servizi digitali posso consultare?",
+      "Come si aggiunge una scadenza?"
     ]
   }
 ];
