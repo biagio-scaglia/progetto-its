@@ -4,7 +4,6 @@ import { StatoPercorso } from "../../types";
 import { 
   CheckCircledIcon, 
   ClockIcon, 
-  ExclamationTriangleIcon, 
   FileTextIcon, 
   CrossCircledIcon 
 } from "@radix-ui/react-icons";
@@ -35,12 +34,6 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ stato, className = "" 
           label: "Completato",
           variant: "success" as const,
           icon: <CheckCircledIcon aria-hidden="true" />,
-        };
-      case "da_verificare":
-        return {
-          label: "Da verificare",
-          variant: "warning" as const,
-          icon: <ExclamationTriangleIcon aria-hidden="true" />,
         };
       case "scaduto":
       case "scaduta":

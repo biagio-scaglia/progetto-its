@@ -42,12 +42,12 @@ function App() {
     addScadenza,
     stepForward,
     stepBackward,
-    uploadDocument,
-    removeDocument,
     startPercorso,
     uploadNewDoc,
     deleteDoc,
     sendMessage,
+    clearChat,
+    deleteMessage,
     richiediGeolocalizzazione,
     revocaGeolocalizzazione
   } = useAppState();
@@ -103,6 +103,24 @@ function App() {
     };
   }, [currentPage]);
 
+  // Forza lo scroll in alto su tutti i contenitori al cambio di pagina o guida selezionata
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const scrollContainers = [
+      document.getElementById("main-content"),
+      document.querySelector(".app-content-wrapper"),
+      document.querySelector(".app-content"),
+      document.querySelector(".app-main"),
+      document.body,
+      document.documentElement
+    ];
+    scrollContainers.forEach((el) => {
+      if (el) {
+        el.scrollTop = 0;
+      }
+    });
+  }, [currentPage, selectedPercorsoId]);
+
   // Mappa i titoli e sottotitoli delle pagine per la barra superiore
   const getPageTitleAndSubtitle = () => {
     switch (currentPage) {
@@ -114,7 +132,7 @@ function App() {
         return { title: "I tuoi Percorsi di Guida", subtitle: "Stato dei percorsi di compilazione aperti" };
       case "dettaglio-pratica": {
         const p = percorsi.find(x => x.id === selectedPercorsoId);
-        return { title: p ? p.titolo : "Pagina Guida Servizio", subtitle: p ? `Codice Guida: ${p.codice}` : "Guida Pubblica" };
+        return { title: p ? p.titolo : "Pagina Guida Servizio", subtitle: p ? `${p.categoria}` : "Guida Pubblica" };
       }
       case "servizi":
         return { title: "Catalogo delle Guide", subtitle: "Sfoglia e trova le istruzioni per i servizi digitali" };
@@ -192,8 +210,6 @@ function App() {
           percorso={percorsi.find(p => p.id === selectedPercorsoId)!}
           documenti={documenti}
           onBack={() => handleNavigate("pratiche")}
-          onUploadDocument={uploadDocument}
-          onRemoveDocument={removeDocument}
           onStepForward={stepForward}
           onStepBackward={stepBackward}
         />
@@ -221,6 +237,8 @@ function App() {
           onSendMessage={sendMessage}
           onNavigate={handleNavigate}
           onSelectPercorso={handleSelectPercorso}
+          onClearChat={clearChat}
+          onDeleteMessage={deleteMessage}
         />
       )}
 

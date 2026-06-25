@@ -1,6 +1,5 @@
 import React from "react";
 import { Percorso, Scadenza, Documento } from "../types";
-import { Alert } from "../components/ui/Alert";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { SummaryWidgets } from "../components/dashboard/SummaryWidgets";
 import { ActiveGuidesList } from "../components/dashboard/ActiveGuidesList";
@@ -25,11 +24,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onNavigate,
   onSelectPercorso
 }) => {
-  const percorsiAttivi = percorsi.filter(p => p.stato === "in_corso" || p.stato === "da_verificare").length;
+  const percorsiAttivi = percorsi.filter(p => p.stato === "in_corso").length;
   const scadenzePendenti = scadenze.filter(s => !s.completata).length;
   const totalDocumenti = documenti.length;
 
-  const percorsoUrgente = percorsi.find(p => p.stato === "da_verificare");
   const activeGuides = percorsi.slice(0, 3);
 
   const formatMonth = (dateStr: string) => {
@@ -54,28 +52,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* Avviso di integrazione urgente */}
-      {percorsoUrgente && (
-        <Alert variant="warning" title="Documento da integrare - Azione necessaria">
-          Nel percorso <strong>{percorsoUrgente.titolo}</strong> mancano dei documenti richiesti dall'ente.
-          <button 
-            onClick={() => onSelectPercorso(percorsoUrgente.id)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--color-primary)",
-              fontWeight: "bold",
-              cursor: "pointer",
-              padding: 0,
-              marginLeft: "12px",
-              textDecoration: "underline",
-              fontSize: "1.05rem"
-            }}
-          >
-            Apri percorso per completare
-          </button>
-        </Alert>
-      )}
+
 
       {/* Pulsante grande per trovare nuove guide */}
       <div 
@@ -89,7 +66,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)" }}>
-          <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--color-primary)" }}>
+          <h3 style={{ fontSize: "1.3rem", fontWeight: 600, color: "var(--color-primary)" }}>
             Hai bisogno di iniziare una nuova pratica?
           </h3>
           <p style={{ fontSize: "1.05rem", color: "var(--color-text-secondary)" }}>
@@ -125,7 +102,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="card-body" style={{ display: "flex", gap: "var(--space-md)", alignItems: "flex-start", padding: "var(--space-lg)" }}>
           <InfoCircledIcon style={{ width: "32px", height: "32px", color: "var(--color-primary)", flexShrink: 0 }} />
           <div>
-            <h4 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-dark-blue)", marginBottom: "8px" }}>
+            <h4 style={{ fontSize: "1.2rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "8px" }}>
               Informazioni utili sull'applicazione
             </h4>
             <p style={{ color: "var(--color-text-secondary)", fontSize: "1.05rem", lineHeight: "1.5" }}>

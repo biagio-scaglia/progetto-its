@@ -201,6 +201,7 @@ export function useAppState() {
         const nextStep = p.passoCorrente + 1;
         const isFinished = nextStep >= p.totalePassi;
         
+        
         const newEvent = {
           id: `ev-step-${Date.now()}`,
           data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
@@ -267,14 +268,7 @@ export function useAppState() {
             : item
         );
 
-        const allMandatoryCompleted = updatedChecklist
-          .filter(item => item.obbligatorio)
-          .every(item => item.completato);
-
         let newStato = p.stato;
-        if (p.stato === "da_verificare" && allMandatoryCompleted) {
-          newStato = "in_corso";
-        }
 
         const newEvent = {
           id: `ev-${Date.now()}`,
@@ -331,11 +325,7 @@ export function useAppState() {
           return item;
         });
 
-        const targetItem = p.documentiNecessari.find(i => i.id === checklistItemId);
         let newStato = p.stato;
-        if (targetItem?.obbligatorio && p.stato === "in_corso") {
-          newStato = "da_verificare";
-        }
 
         const newEvent = {
           id: `ev-${Date.now()}`,
@@ -371,59 +361,66 @@ export function useAppState() {
     const srv = SERVIZI_MOCK.find(s => s.id === servizioId);
     if (!srv) return null;
 
-    let existingId: string | null = null;
+    const exists = percorsi.find(p => p.titolo.toLowerCase().includes(srv.titolo.toLowerCase()) && p.stato !== "completato");
+    if (exists) {
+      return exists.id;
+    }
+
+    const newPercorsoId = `percorso-${Date.now()}`;
+    const randomCode = `GUIDA-NEW-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const customPassiNomi = srv.passiNomi || ["Prepara Requisiti", "Collegamento Portale PA", "Conferma Domanda"];
+    const customPassiDettagli = srv.passiDettagli || [
+      `Assicurati di possedere i seguenti requisiti: ${srv.requisiti.join(", ")}.`,
+      `Accedi al portale ufficiale "${srv.nomePortaleUfficiale}" all'indirizzo ${srv.linkPortaleUfficiale} usando la tua identità digitale.`,
+      `Una volta inviata la domanda sul portale ministeriale, segna come concluso questo percorso di guida.`
+    ];
+
+    const newPercorso: Percorso = {
+      id: newPercorsoId,
+      codice: randomCode,
+      titolo: `Guida per: ${srv.titolo}`,
+      descrizione: srv.descrizione,
+      categoria: srv.categoria,
+      stato: "bozza",
+      dataAggiornamento: new Date().toISOString().split("T")[0],
+      passoCorrente: 0,
+      totalePassi: customPassiNomi.length,
+      passiNomi: customPassiNomi,
+      passiDettagli: customPassiDettagli,
+      documentiNecessari: srv.requisiti.map((req, index) => ({
+        id: `chk-new-${index}-${Date.now()}`,
+        testo: req,
+        completato: false,
+        obbligatorio: index === 0
+      })),
+      cronologia: [
+        {
+          id: `ev-new-${Date.now()}`,
+          data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
+          titolo: "Percorso Guida Attivato",
+          descrizione: `Hai attivato la guida per: ${srv.titolo}. Segui i passi descritti.`
+        }
+      ],
+      linkPortaleUfficiale: srv.linkPortaleUfficiale,
+      nomePortaleUfficiale: srv.nomePortaleUfficiale,
+      cose: srv.cose,
+      aCosaServe: srv.aCosaServe,
+      cosaServePrima: srv.cosaServePrima,
+      problemiFrequenti: srv.problemiFrequenti,
+      noteImportanti: srv.noteImportanti,
+      fontiRiferimenti: srv.fontiRiferimenti,
+      dataUltimoAggiornamento: srv.dataUltimoAggiornamento
+    };
+
     setPercorsi(prev => {
-      const exists = prev.find(p => p.titolo.toLowerCase().includes(srv.titolo.toLowerCase()) && p.stato !== "completato");
-      if (exists) {
-        existingId = exists.id;
-        return prev;
-      }
-
-      const newPercorsoId = `percorso-${Date.now()}`;
-      const randomCode = `GUIDA-NEW-${Math.floor(1000 + Math.random() * 9000)}`;
-
-      const newPercorso: Percorso = {
-        id: newPercorsoId,
-        codice: randomCode,
-        titolo: `Guida per: ${srv.titolo}`,
-        descrizione: srv.descrizione,
-        categoria: srv.categoria,
-        stato: "bozza",
-        dataAggiornamento: new Date().toISOString().split("T")[0],
-        passoCorrente: 0,
-        totalePassi: 3,
-        passiNomi: ["Prepara Requisiti", "Collegamento Portale PA", "Conferma Domanda"],
-        passiDettagli: [
-          `Assicurati di possedere i seguenti requisiti: ${srv.requisiti.join(", ")}.`,
-          `Accedi al portale ufficiale "${srv.nomePortaleUfficiale}" all'indirizzo ${srv.linkPortaleUfficiale} usando la tua identità digitale.`,
-          `Una volta inviata la domanda sul portale ministeriale, segna come concluso questo percorso di guida.`
-        ],
-        documentiNecessari: srv.requisiti.map((req, index) => ({
-          id: `chk-new-${index}-${Date.now()}`,
-          testo: req,
-          completato: false,
-          obbligatorio: index === 0
-        })),
-        cronologia: [
-          {
-            id: `ev-new-${Date.now()}`,
-            data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
-            titolo: "Percorso Guida Attivato",
-            descrizione: `Hai attivato la guida per: ${srv.titolo}. Segui i passi descritti.`
-          }
-        ],
-        linkPortaleUfficiale: srv.linkPortaleUfficiale,
-        nomePortaleUfficiale: srv.nomePortaleUfficiale
-      };
-
       const updated = [newPercorso, ...prev];
       PercorsiRepository.savePercorsi(updated);
-      existingId = newPercorsoId;
       return updated;
     });
 
-    return existingId;
-  }, []);
+    return newPercorsoId;
+  }, [percorsi]);
 
   // Carica un documento standalone (indipendente da un percorso)
   const uploadNewDoc = useCallback((nome: string, tipo: string, dimensione: string) => {
@@ -566,6 +563,20 @@ export function useAppState() {
     }, 850);
   }, [scadenze, percorsi]);
 
+  const clearChat = useCallback(() => {
+    ChatRepository.clearMessaggi();
+    const initial = ChatRepository.getMessaggi();
+    setMessaggi(initial);
+  }, []);
+
+  const deleteMessage = useCallback((id: string) => {
+    setMessaggi(prev => {
+      const updated = prev.filter(m => m.id !== id);
+      ChatRepository.saveMessaggi(updated);
+      return updated;
+    });
+  }, []);
+
   return {
     profilo,
     percorsi,
@@ -587,6 +598,8 @@ export function useAppState() {
     uploadNewDoc,
     deleteDoc,
     sendMessage,
+    clearChat,
+    deleteMessage,
     richiediGeolocalizzazione,
     revocaGeolocalizzazione
   };

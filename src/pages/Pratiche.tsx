@@ -33,7 +33,6 @@ export const Pratiche: React.FC<PraticheProps> = ({
     { id: "tutte", label: "Tutte le guide" },
     { id: "bozza", label: "In preparazione" },
     { id: "in_corso", label: "In corso" },
-    { id: "da_verificare", label: "Da integrare" },
     { id: "completato", label: "Completate" },
     { id: "scaduto", label: "Scadute" },
   ];
@@ -120,7 +119,7 @@ export const Pratiche: React.FC<PraticheProps> = ({
                   border: "none",
                   borderBottom: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                   color: isSelected ? "var(--color-primary)" : "var(--color-text-secondary)",
-                  fontWeight: isSelected ? "700" : "600",
+                  fontWeight: isSelected ? "600" : "500",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   outlineOffset: "-3px"
@@ -164,15 +163,11 @@ export const Pratiche: React.FC<PraticheProps> = ({
                   <div className="flex justify-between items-start" style={{ gap: "var(--space-md)", flexWrap: "wrap" }}>
                     <div>
                       <div className="flex items-center gap-sm mb-xs" style={{ flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--color-text-secondary)" }}>
-                          {percorso.codice}
-                        </span>
-                        <span style={{ color: "var(--color-border)" }}>•</span>
                         <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-primary)" }}>
                           {percorso.categoria}
                         </span>
                       </div>
-                      <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-dark-blue)", marginBottom: "var(--space-xs)" }}>
+                      <h3 style={{ fontSize: "1.2rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "var(--space-xs)" }}>
                         {percorso.titolo}
                       </h3>
                       <p style={{ color: "var(--color-text-secondary)", fontSize: "0.95rem", marginBottom: "var(--space-md)" }}>
@@ -191,7 +186,7 @@ export const Pratiche: React.FC<PraticheProps> = ({
                       <span style={{ color: "var(--color-text-secondary)" }}>
                         Passo corrente: <strong>{percorso.passiNomi[percorso.passoCorrente]}</strong>
                       </span>
-                      <span style={{ fontWeight: 600, color: "var(--color-dark-blue)" }}>
+                      <span style={{ fontWeight: 500, color: "var(--color-dark-blue)" }}>
                         Passo {percorso.passoCorrente + 1} di {percorso.totalePassi}
                       </span>
                     </div>
@@ -227,7 +222,7 @@ export const Pratiche: React.FC<PraticheProps> = ({
                   
                   <span style={{ 
                     fontSize: "0.9rem", 
-                    fontWeight: 700, 
+                    fontWeight: 600,
                     color: "var(--color-primary)",
                     display: "flex",
                     alignItems: "center",

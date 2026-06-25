@@ -17,19 +17,18 @@ export const RecommendedSteps: React.FC<RecommendedStepsProps> = ({
 }) => {
   const pendingScadenze = scadenze.filter(s => !s.completata);
 
+  if (pendingScadenze.length === 0) {
+    return null;
+  }
+
   return (
     <div className="card w-full mb-lg">
       <div className="card-header">
-        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)" }}>Prossimi passi consigliati</h3>
+        <h3 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-dark-blue)" }}>Prossimi passi consigliati</h3>
       </div>
       
       <div className="card-body" style={{ padding: "var(--space-md)" }}>
-        {pendingScadenze.length === 0 ? (
-          <p style={{ color: "var(--color-text-disabled)", fontSize: "0.9rem", textAlign: "center" }}>
-            Nessuna azione o adempimento richiesto a breve.
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
             {pendingScadenze.slice(0, 3).map((scad) => {
               const isUrgent = scad.priorita === "alta";
               return (
@@ -55,7 +54,6 @@ export const RecommendedSteps: React.FC<RecommendedStepsProps> = ({
               );
             })}
           </div>
-        )}
       </div>
     </div>
   );

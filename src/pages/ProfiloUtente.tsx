@@ -196,13 +196,17 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
           )}
 
           {isGeolocActive && geodata.coordinate && geodata.closestCity && (
-            <div style={{ 
-              padding: "var(--space-md)", 
-              backgroundColor: "var(--color-background)", 
-              borderRadius: "var(--radius-md)", 
-              border: "1px solid var(--color-border)",
-              marginTop: "var(--space-sm)"
-            }}>
+            <div 
+              className="card-interactive"
+              style={{ 
+                padding: "var(--space-lg)", 
+                backgroundColor: "var(--color-surface)", 
+                borderRadius: "var(--radius-lg)", 
+                border: "2px solid var(--color-border)",
+                marginTop: "var(--space-md)",
+                boxShadow: "var(--shadow-sm)"
+              }}
+            >
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", fontSize: "0.85rem" }}>
                 <div>
                   <strong style={{ display: "block" }}>Coordinate Rilevate (GPS reali):</strong>

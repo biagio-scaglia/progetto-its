@@ -1,20 +1,24 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Messaggio } from "../types";
 import { Button } from "../components/ui/Button";
-import { ChatBubbleIcon, PaperPlaneIcon } from "@radix-ui/react-icons";
+import { ChatBubbleIcon, PaperPlaneIcon, TrashIcon } from "@radix-ui/react-icons";
 
 export interface AssistenteProps {
   messaggi: Messaggio[];
   onSendMessage: (testo: string) => void;
   onNavigate: (page: string) => void;
   onSelectPercorso: (id: string) => void;
+  onClearChat: () => void;
+  onDeleteMessage: (id: string) => void;
 }
 
 export const Assistente: React.FC<AssistenteProps> = ({
   messaggi,
   onSendMessage,
   onNavigate,
-  onSelectPercorso
+  onSelectPercorso,
+  onClearChat,
+  onDeleteMessage
 }) => {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -66,12 +70,33 @@ export const Assistente: React.FC<AssistenteProps> = ({
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - var(--topbar-height) - 2 * var(--space-lg))" }}>
       
-      <div className="card-header" style={{ padding: "0 0 var(--space-md) 0", borderBottom: "1px solid var(--color-border)", marginBottom: "var(--space-md)" }}>
-        <div>
-          <h2 className="page-title" style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
+      <div className="card-header" style={{ padding: "0 0 var(--space-md) 0", borderBottom: "1px solid var(--color-border)", marginBottom: "var(--space-md)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-sm)" }}>
+        <div style={{ flex: 1, minWidth: "250px" }}>
+          <h2 className="page-title" style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "var(--space-sm)", marginBottom: "4px" }}>
             <ChatBubbleIcon style={{ color: "var(--color-primary)" }} /> Assistente per l'Orientamento
           </h2>
-          <p className="page-subtitle">Digita le tue domande per capire quale servizio attivare, quali scadenze rispettare o come raccogliere i documenti necessari.</p>
+          <p className="page-subtitle" style={{ margin: 0 }}>Digita le tue domande per capire quale servizio attivare, quali scadenze rispettare o come raccogliere i documenti necessari.</p>
+        </div>
+        <div>
+          <Button 
+            variant="secondary" 
+            onClick={onClearChat}
+            style={{ 
+              borderColor: "var(--color-danger)", 
+              color: "var(--color-danger)", 
+              fontSize: "0.85rem", 
+              padding: "8px 16px",
+              minHeight: "36px"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            Cancella cronologia chat
+          </Button>
         </div>
       </div>
 
@@ -101,23 +126,66 @@ export const Assistente: React.FC<AssistenteProps> = ({
             return (
               <div 
                 key={msg.id}
-                className={`message-bubble ${isUser ? "user" : "assistant"}`}
-                style={{
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "var(--space-sm)", 
                   alignSelf: isUser ? "flex-end" : "flex-start",
-                  maxWidth: "75%",
-                  padding: "var(--space-md)",
-                  borderRadius: "var(--radius-lg)",
-                  backgroundColor: isUser ? "var(--color-primary)" : "var(--color-background)",
-                  color: isUser ? "#ffffff" : "var(--color-text-primary)",
-                  border: isUser ? "none" : "1px solid var(--color-border)",
-                  borderBottomRightRadius: isUser ? "var(--radius-xs)" : "var(--radius-lg)",
-                  borderBottomLeftRadius: isUser ? "var(--radius-lg)" : "var(--radius-xs)"
+                  flexDirection: isUser ? "row" : "row-reverse",
+                  maxWidth: "85%"
                 }}
               >
-                <div style={{ fontSize: "0.8rem", fontWeight: 700, color: isUser ? "rgba(255,255,255,0.8)" : "var(--color-text-secondary)", marginBottom: "2px" }}>
-                  {isUser ? "Tu" : "Guida Digitale"} • {msg.timestamp}
+                <button
+                  onClick={() => onDeleteMessage(msg.id)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--color-text-secondary)",
+                    cursor: "pointer",
+                    padding: "6px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all var(--transition-fast)",
+                    opacity: 0.4,
+                    minHeight: "32px",
+                    minWidth: "32px"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = "1";
+                    e.currentTarget.style.color = "var(--color-danger)";
+                    e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = "0.4";
+                    e.currentTarget.style.color = "var(--color-text-secondary)";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                  title="Elimina questo messaggio"
+                  aria-label="Elimina messaggio"
+                >
+                  <TrashIcon style={{ width: "16px", height: "16px" }} />
+                </button>
+
+                <div 
+                  className={`message-bubble ${isUser ? "user" : "assistant"}`}
+                  style={{
+                    flex: 1,
+                    padding: "var(--space-md)",
+                    borderRadius: "var(--radius-lg)",
+                    backgroundColor: isUser ? "var(--color-primary)" : "var(--color-background)",
+                    color: isUser ? "#ffffff" : "var(--color-text-primary)",
+                    border: isUser ? "none" : "1px solid var(--color-border)",
+                    borderBottomRightRadius: isUser ? "var(--radius-xs)" : "var(--radius-lg)",
+                    borderBottomLeftRadius: isUser ? "var(--radius-lg)" : "var(--radius-xs)"
+                  }}
+                >
+                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: isUser ? "rgba(255,255,255,0.8)" : "var(--color-text-secondary)", marginBottom: "2px" }}>
+                    {isUser ? "Tu" : "Guida Digitale"} • {msg.timestamp}
+                  </div>
+                  {renderMessageText(msg)}
                 </div>
-                {renderMessageText(msg)}
               </div>
             );
           })}

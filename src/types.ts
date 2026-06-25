@@ -1,4 +1,4 @@
-export type StatoPercorso = 'bozza' | 'in_corso' | 'completato' | 'da_verificare' | 'scaduto';
+export type StatoPercorso = 'bozza' | 'in_corso' | 'completato' | 'scaduto';
 
 export interface DocumentoRichiesto {
   id: string;
@@ -32,6 +32,13 @@ export interface Percorso {
   linkPortaleUfficiale: string; // Es. https://www.anpr.interno.it/
   nomePortaleUfficiale: string; // Es. "Portale ANPR"
   note?: string;
+  cose?: string; // Cos'è
+  aCosaServe?: string; // A cosa serve
+  cosaServePrima?: string; // Cosa ti serve prima di iniziare
+  problemiFrequenti?: string[]; // Problemi frequenti
+  noteImportanti?: string; // Note importanti
+  fontiRiferimenti?: string[]; // Fonti / riferimenti ufficiali
+  dataUltimoAggiornamento?: string; // Data ultimo aggiornamento
 }
 
 export type StatoDocumento = 'valido' | 'da_verificare' | 'scaduto';
@@ -71,6 +78,15 @@ export interface Servizio {
   linkPortaleUfficiale: string;
   nomePortaleUfficiale: string;
   popolare: boolean;
+  passiNomi?: string[];
+  passiDettagli?: string[];
+  cose?: string; // Cos'è
+  aCosaServe?: string; // A cosa serve
+  cosaServePrima?: string; // Cosa ti serve prima di iniziare
+  problemiFrequenti?: string[]; // Problemi frequenti
+  noteImportanti?: string; // Note importanti
+  fontiRiferimenti?: string[]; // Fonti / riferimenti ufficiali
+  dataUltimoAggiornamento?: string; // Data ultimo aggiornamento
 }
 
 export interface Messaggio {

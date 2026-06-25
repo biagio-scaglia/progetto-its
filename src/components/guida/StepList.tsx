@@ -20,7 +20,7 @@ export const StepList: React.FC<StepListProps> = ({
   return (
     <div className="card w-full mb-lg">
       <div className="card-header">
-        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)" }}>
+        <h3 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-dark-blue)" }}>
           Passaggi da seguire per completare il servizio
         </h3>
       </div>
@@ -55,7 +55,7 @@ export const StepList: React.FC<StepListProps> = ({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     fontSize: "0.85rem",
                     border: isActive ? "3px solid var(--color-primary-light)" : "none"
                   }}
@@ -66,10 +66,10 @@ export const StepList: React.FC<StepListProps> = ({
               
               <div style={{ flex: 1 }}>
                 <h4 style={{ 
-                  fontSize: "1.2rem", 
-                  fontWeight: 800, 
-                  color: isActive ? "var(--color-primary)" : "var(--color-text-primary)",
-                  textDecoration: isCompleted ? "line-through" : "none"
+                   fontSize: "1.2rem", 
+                   fontWeight: 500, 
+                   color: isActive ? "var(--color-primary)" : "var(--color-text-primary)",
+                   textDecoration: isCompleted ? "line-through" : "none"
                 }}>
                   {passoName}
                 </h4>
@@ -90,7 +90,11 @@ export const StepList: React.FC<StepListProps> = ({
                         </button>
                       )}
                       
-                      {percorso.passoCorrente < percorso.totalePassi - 1 ? (
+                      {percorso.stato === "completato" ? (
+                        <div style={{ color: "var(--color-success)", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", fontSize: "1.05rem", padding: "10px 0" }}>
+                          ✓ Hai completato tutti i passaggi di questa guida!
+                        </div>
+                      ) : percorso.passoCorrente < percorso.totalePassi - 1 ? (
                         <button 
                           className="btn btn-primary" 
                           onClick={() => onStepForward(percorso.id)}

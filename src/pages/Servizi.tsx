@@ -102,7 +102,7 @@ export const Servizi: React.FC<ServiziProps> = ({
                   border: "none",
                   borderBottom: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                   color: isSelected ? "var(--color-primary)" : "var(--color-text-secondary)",
-                  fontWeight: isSelected ? "700" : "600",
+                  fontWeight: isSelected ? "600" : "500",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   outlineOffset: "-3px"
@@ -138,17 +138,17 @@ export const Servizi: React.FC<ServiziProps> = ({
               <div className="card-body" style={{ padding: "var(--space-lg)", display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
                 <div>
                   <div className="flex justify-between items-center mb-xs">
-                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--color-primary)", textTransform: "uppercase" }}>
+                    <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-primary)", textTransform: "uppercase" }}>
                       {srv.categoria}
                     </span>
                     {srv.popolare && (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "2px", fontSize: "0.75rem", color: "var(--color-warning)", fontWeight: 700 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "2px", fontSize: "0.75rem", color: "var(--color-warning)", fontWeight: 600 }}>
                         <StarFilledIcon /> Consigliato
                       </span>
                     )}
                   </div>
                   
-                  <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--color-dark-blue)", lineHeight: 1.3, marginBottom: "var(--space-xs)" }}>
+                  <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "var(--color-dark-blue)", lineHeight: 1.3, marginBottom: "var(--space-xs)" }}>
                     {srv.titolo}
                   </h3>
                   
@@ -159,7 +159,7 @@ export const Servizi: React.FC<ServiziProps> = ({
 
                 {/* Requisiti */}
                 <div>
-                  <h4 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "4px" }}>
+                  <h4 style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-primary)", marginBottom: "4px" }}>
                     Requisiti di base necessari:
                   </h4>
                   <ul style={{ paddingLeft: "18px", fontSize: "0.8rem", color: "var(--color-text-secondary)", display: "flex", flexDirection: "column", gap: "2px" }}>
@@ -172,20 +172,20 @@ export const Servizi: React.FC<ServiziProps> = ({
                 {/* Portale PA */}
                 <div style={{ backgroundColor: "var(--color-background)", padding: "var(--space-sm)", borderRadius: "var(--radius-sm)", fontSize: "0.8rem" }}>
                   <span style={{ color: "var(--color-text-secondary)" }}>Portale PA di completamento:</span>
-                  <strong style={{ display: "block", color: "var(--color-primary)", marginTop: "2px" }}>
+                  <span style={{ display: "block", color: "var(--color-primary)", marginTop: "2px", fontWeight: 600 }}>
                     {srv.nomePortaleUfficiale}
-                  </strong>
+                  </span>
                 </div>
 
                 {/* Metadati */}
                 <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-sm)", fontSize: "0.8rem", display: "flex", flexDirection: "column", gap: "2px" }}>
                   <div>
                     <span style={{ color: "var(--color-text-secondary)" }}>Tempo medio di istruttoria: </span>
-                    <strong style={{ color: "var(--color-text-primary)" }}>{srv.tempoStimato}</strong>
+                    <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{srv.tempoStimato}</span>
                   </div>
                   <div>
                     <span style={{ color: "var(--color-text-secondary)" }}>Ufficio competente: </span>
-                    <strong style={{ color: "var(--color-text-primary)" }}>{srv.ufficioCompetente}</strong>
+                    <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{srv.ufficioCompetente}</span>
                   </div>
                 </div>
               </div>

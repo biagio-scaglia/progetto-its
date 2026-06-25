@@ -151,7 +151,7 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.15rem;
   letter-spacing: 0.5px;
 }
@@ -289,7 +289,7 @@ button, input, select, textarea {
 
 .topbar-title {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-dark-blue);
 }
 
@@ -375,7 +375,7 @@ button, input, select, textarea {
   justify-content: center;
   gap: var(--space-sm);
   padding: 14px 28px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.05rem;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
@@ -444,7 +444,7 @@ button, input, select, textarea {
   background-color: transparent;
   color: var(--color-primary);
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: var(--space-sm) var(--space-md);
   gap: var(--space-xs);
   border-radius: var(--radius-sm);
@@ -486,7 +486,7 @@ button, input, select, textarea {
 }
 
 .form-label {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.95rem;
   color: var(--color-text-primary);
 }
@@ -530,7 +530,7 @@ button, input, select, textarea {
 .form-error {
   font-size: 0.85rem;
   color: var(--color-danger);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Search bar styling */
@@ -567,7 +567,7 @@ button, input, select, textarea {
   padding: 2px 10px;
   border-radius: 12px;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -635,7 +635,7 @@ button, input, select, textarea {
 }
 
 .alert-title {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-primary);
 }
 
@@ -741,7 +741,7 @@ button, input, select, textarea {
 
 .page-title {
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-dark-blue);
   line-height: 1.2;
 }
@@ -813,7 +813,7 @@ button, input, select, textarea {
 
 .summary-card-value {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-dark-blue);
   line-height: 1.1;
 }
@@ -852,7 +852,7 @@ button, input, select, textarea {
 
 .deadline-date-month {
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   background-color: var(--color-dark-blue);
   color: #ffffff;
@@ -863,7 +863,7 @@ button, input, select, textarea {
 
 .deadline-date-day {
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 4px 0;
   color: var(--color-text-primary);
 }
@@ -873,7 +873,7 @@ button, input, select, textarea {
 }
 
 .deadline-title {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.95rem;
   color: var(--color-text-primary);
 }
@@ -933,7 +933,7 @@ button, input, select, textarea {
 }
 
 .list-item-title {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.95rem;
 }
 
@@ -1021,7 +1021,7 @@ button, input, select, textarea {
 }
 .stepper-step.active .step-label {
   color: var(--color-primary);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* ==========================================================================
@@ -1046,7 +1046,7 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-dark-blue);
 }
 
@@ -2113,5 +2113,282 @@ button, input, select, textarea {
   font-size: 13px;
   font-weight: 600;
 }
+
+/* ==========================================================================
+   Interactive UI Enhancements: Hover States, Borders & Shadows
+   ========================================================================== */
+.card-interactive {
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+.card-interactive:hover {
+  border-color: var(--color-primary) !important;
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-2px);
+}
+
+.card, .profile-section-card, .profile-header-card {
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+.card:hover, .profile-section-card:hover, .profile-header-card:hover {
+  border-color: var(--color-primary) !important;
+}
+
+.list-item {
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast) !important;
+}
+
+.list-item:hover {
+  border-color: var(--color-primary) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transform: translateY(-1px);
+}
+
+.form-input, .form-select, .form-textarea, .search-input {
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+.form-input:hover, .form-select:hover, .form-textarea:hover, .search-input:hover {
+  border-color: var(--color-border-hover) !important;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus, .search-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-primary-light) !important;
+}
+
+/* ==========================================================================
+   Print and PDF Export Styles
+   ========================================================================== */
+@media print {
+  /* Hide non-printable elements */
+  .no-print,
+  .app-sidebar,
+  .app-topbar,
+  .sidebar-footer,
+  .user-profile-badge,
+  .topbar-right,
+  .btn,
+  button,
+  .btn-icon,
+  .alert-interactive,
+  .ente-info-actions,
+  .mb-md {
+    display: none !important;
+  }
+
+  /* Reset layout structure for print page */
+  html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-family: "Liberation Sans", "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .app-shell,
+  .app-main,
+  .app-content-wrapper,
+  .app-content {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: none !important;
+  }
+
+  /* Screen-only view hidden in print */
+  .screen-only {
+    display: none !important;
+  }
+
+  /* Show print-only view in print */
+  .print-only {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm 15mm !important; /* Proper margins for print */
+    box-sizing: border-box !important;
+  }
+
+  /* Print specific elements */
+  .print-header {
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .print-header-top {
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  .print-header-subtitle {
+    font-size: 9pt;
+    color: #555555;
+    text-transform: uppercase;
+  }
+
+  .print-title {
+    font-size: 22pt;
+    font-weight: 700;
+    margin-top: 10px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+    color: #000000;
+  }
+
+  .print-subtitle {
+    font-size: 11pt;
+    font-style: italic;
+    color: #333333;
+    margin-bottom: 20px;
+  }
+
+  .print-meta-table {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    border: 1px solid #dddddd;
+    padding: 12px;
+    background-color: #fcfcfc;
+    margin-bottom: 25px;
+    font-size: 9.5pt;
+  }
+
+  .print-meta-row {
+    margin: 0;
+  }
+
+  .print-section {
+    margin-bottom: 20px;
+    page-break-inside: avoid; /* avoid split sections */
+  }
+
+  .print-section h2 {
+    font-size: 13pt;
+    font-weight: 700;
+    border-left: 3px solid #000000;
+    padding-left: 8px;
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #000000;
+    text-transform: uppercase;
+  }
+
+  .print-section p {
+    margin: 0 0 8px 0;
+    font-size: 10.5pt;
+    text-align: justify;
+  }
+
+  .print-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .print-list li {
+    font-size: 10pt;
+    margin-bottom: 6px;
+    padding-left: 5px;
+  }
+
+  .print-steps {
+    padding-left: 20px;
+    margin: 0;
+  }
+
+  .print-step-item {
+    font-size: 10.5pt;
+    margin-bottom: 12px;
+  }
+
+  .print-step-item strong {
+    font-size: 11pt;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .print-step-item p {
+    margin: 0;
+    font-size: 10pt;
+    color: #222222;
+  }
+
+  .print-list-sources {
+    padding-left: 18px;
+    margin: 0;
+    font-size: 9pt;
+    color: #444444;
+  }
+
+  .print-footer {
+    border-top: 1px solid #cccccc;
+    margin-top: 30px;
+    padding-top: 8px;
+    font-size: 8pt;
+    color: #666666;
+    text-align: center;
+    page-break-before: avoid;
+  }
+
+  /* Force page breaks rules */
+  .page-break-before-avoid {
+    page-break-before: avoid;
+  }
+}
+
+/* Hide print-only by default on screen */
+.print-only {
+  display: none;
+}
+
+/* Celebration Modal animations and confetti */
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 75, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(13, 110, 75, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 75, 0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes floatConfetti {
+  0% { transform: translateY(100%) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(-200px) rotate(360deg); opacity: 0; }
+}
+
+.confetti-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #f59e0b;
+  border-radius: 20%;
+  animation: floatConfetti 3.5s ease-in-out infinite;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.confetti-particle.p1 { left: 10%; bottom: 0; animation-delay: 0s; background-color: #ef4444; width: 8px; height: 12px; }
+.confetti-particle.p2 { left: 30%; bottom: 0; animation-delay: 0.8s; background-color: #3b82f6; width: 10px; height: 10px; border-radius: 50%; }
+.confetti-particle.p3 { left: 50%; bottom: 0; animation-delay: 0.3s; background-color: #10b981; width: 12px; height: 6px; }
+.confetti-particle.p4 { left: 70%; bottom: 0; animation-delay: 1.2s; background-color: #f59e0b; width: 8px; height: 8px; }
+.confetti-particle.p5 { left: 85%; bottom: 0; animation-delay: 0.5s; background-color: #8b5cf6; width: 10px; height: 10px; }
+.confetti-particle.p6 { left: 95%; bottom: 0; animation-delay: 1.5s; background-color: #ec4899; width: 12px; height: 12px; border-radius: 50%; }
+
 
 
