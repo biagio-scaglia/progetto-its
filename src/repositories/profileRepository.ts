@@ -123,6 +123,21 @@ export class ProfileRepository {
   }
 
   /**
+   * Rimuove in modo permanente tutti i dati dell'applicazione dal dispositivo.
+   */
+  static clearAllData(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("servizidigitali_percorsi");
+      localStorage.removeItem("servizidigitali_documenti");
+      localStorage.removeItem("servizidigitali_scadenze");
+      localStorage.removeItem("servizidigitali_chat");
+    } catch (error) {
+      console.error("Errore durante il reset completo di tutti i dati applicativi:", error);
+    }
+  }
+
+  /**
    * Helper per verificare la validità formale dell'oggetto caricato.
    */
   private static validaStruttura(obj: any): boolean {

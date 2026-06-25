@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Alert } from "../components/ui/Alert";
 import { ProfiloUtente as ProfiloUtenteType } from "../types";
-import { ProfileRepository, contieneEmoji } from "../repositories/profileRepository";
+import { contieneEmoji } from "../repositories/profileRepository";
 import { PersonIcon, AccessibilityIcon, LockClosedIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 
 interface ImpostazioniProps {
@@ -83,8 +83,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
         consensoGeolocalizzazione: consensoGeoloc
       };
 
-      // Salva nel repository locale
-      ProfileRepository.saveProfile(updatedProfile);
+      // Aggiorna lo stato tramite hook
       onUpdate(updatedProfile);
       
       setSuccessMessage("Modifiche salvate con successo nel database locale.");

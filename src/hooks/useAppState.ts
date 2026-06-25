@@ -1,0 +1,483 @@
+import { useState, useCallback } from "react";
+import { 
+  ProfiloUtente, 
+  Percorso, 
+  Documento, 
+  Scadenza, 
+  Messaggio, 
+  PrioritaScadenza 
+} from "../types";
+import { ProfileRepository } from "../repositories/profileRepository";
+import { PercorsiRepository } from "../repositories/percorsiRepository";
+import { DocumentiRepository } from "../repositories/documentiRepository";
+import { ScadenzeRepository } from "../repositories/scadenzeRepository";
+import { ChatRepository } from "../repositories/chatRepository";
+import { SERVIZI_MOCK } from "../mockData";
+
+/**
+ * Hook custom per la gestione dello stato globale dell'applicazione.
+ * Separa la logica di business dai componenti di interfaccia (UI).
+ */
+export function useAppState() {
+  // Stato del profilo utente
+  const [profilo, setProfilo] = useState<ProfiloUtente | null>(() => 
+    ProfileRepository.getProfile()
+  );
+
+  // Stato dei percorsi guidati
+  const [percorsi, setPercorsi] = useState<Percorso[]>(() => 
+    PercorsiRepository.getPercorsi()
+  );
+
+  // Stato dei documenti locali
+  const [documenti, setDocumenti] = useState<Documento[]>(() => 
+    DocumentiRepository.getDocumenti()
+  );
+
+  // Stato delle scadenze
+  const [scadenze, setScadenze] = useState<Scadenza[]>(() => 
+    ScadenzeRepository.getScadenze()
+  );
+
+  // Stato dei messaggi dell'assistente virtuale
+  const [messaggi, setMessaggi] = useState<Messaggio[]>(() => 
+    ChatRepository.getMessaggi()
+  );
+
+  // Aggiorna il profilo utente
+  const updateProfile = useCallback((nuovoProfilo: ProfiloUtente) => {
+    ProfileRepository.saveProfile(nuovoProfilo);
+    setProfilo(nuovoProfilo);
+  }, []);
+
+  // Ripristina l'applicazione allo stato iniziale (cancella tutto)
+  const resetApp = useCallback(() => {
+    ProfileRepository.clearAllData();
+    setProfilo(null);
+    // Ricarica i dati dai valori mock iniziali o vuoti
+    const initialPercorsi = PercorsiRepository.getPercorsi();
+    const initialDocumenti = DocumentiRepository.getDocumenti();
+    const initialScadenze = ScadenzeRepository.getScadenze();
+    const initialMessaggi = ChatRepository.getMessaggi();
+    
+    setPercorsi(initialPercorsi);
+    setDocumenti(initialDocumenti);
+    setScadenze(initialScadenze);
+    setMessaggi(initialMessaggi);
+  }, []);
+
+  // Cambia stato di completamento di una scadenza
+  const toggleScadenza = useCallback((id: string) => {
+    setScadenze(prev => {
+      const updated = prev.map(s => (s.id === id ? { ...s, completata: !s.completata } : s));
+      ScadenzeRepository.saveScadenze(updated);
+      return updated;
+    });
+  }, []);
+
+  // Aggiunge una nuova scadenza custom
+  const addScadenza = useCallback((titolo: string, descrizione: string, data: string, priorita: PrioritaScadenza) => {
+    const newScad: Scadenza = {
+      id: `scad-${Date.now()}`,
+      titolo,
+      descrizione,
+      data,
+      priorita,
+      completata: false
+    };
+    setScadenze(prev => {
+      const updated = [newScad, ...prev];
+      ScadenzeRepository.saveScadenze(updated);
+      return updated;
+    });
+  }, []);
+
+  // Avanza di un passo in un percorso guida
+  const stepForward = useCallback((percorsoId: string) => {
+    setPercorsi(prev => {
+      const updated = prev.map(p => {
+        if (p.id !== percorsoId) return p;
+        
+        const nextStep = p.passoCorrente + 1;
+        const isFinished = nextStep >= p.totalePassi;
+        
+        const newEvent = {
+          id: `ev-step-${Date.now()}`,
+          data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
+          titolo: isFinished ? "Percorso Guida Concluso" : "Passo Completato",
+          descrizione: isFinished 
+            ? `Hai completato tutti i passaggi della guida per: ${p.titolo}.` 
+            : `Completato il passo: ${p.passiNomi[p.passoCorrente]}. Ora sei al passo: ${p.passiNomi[nextStep]}.`
+        };
+
+        return {
+          ...p,
+          passoCorrente: isFinished ? p.passoCorrente : nextStep,
+          stato: isFinished ? ("completato" as const) : p.stato,
+          cronologia: [...p.cronologia, newEvent],
+          dataAggiornamento: new Date().toISOString().split("T")[0]
+        };
+      });
+      PercorsiRepository.savePercorsi(updated);
+      return updated;
+    });
+  }, []);
+
+  // Ritorna al passo precedente in un percorso guida
+  const stepBackward = useCallback((percorsoId: string) => {
+    setPercorsi(prev => {
+      const updated = prev.map(p => {
+        if (p.id !== percorsoId) return p;
+        
+        const prevStep = Math.max(0, p.passoCorrente - 1);
+        
+        const newEvent = {
+          id: `ev-step-back-${Date.now()}`,
+          data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
+          titolo: "Ritorno al Passo Precedente",
+          descrizione: `Sei ritornato al passo: ${p.passiNomi[prevStep]}.`
+        };
+
+        return {
+          ...p,
+          passoCorrente: prevStep,
+          stato: p.stato === "completato" ? ("in_corso" as const) : p.stato,
+          cronologia: [...p.cronologia, newEvent],
+          dataAggiornamento: new Date().toISOString().split("T")[0]
+        };
+      });
+      PercorsiRepository.savePercorsi(updated);
+      return updated;
+    });
+  }, []);
+
+  // Associa un file caricato a un elemento checklist della guida
+  const uploadDocument = useCallback((percorsoId: string, checklistItemId: string, fileNome: string) => {
+    const newDocId = `doc-${Date.now()}`;
+    let percorsoTitolo = "";
+
+    setPercorsi(prev => {
+      const updatedPercorsi = prev.map(p => {
+        if (p.id !== percorsoId) return p;
+        percorsoTitolo = p.titolo;
+
+        const updatedChecklist = p.documentiNecessari.map(item =>
+          item.id === checklistItemId
+            ? { ...item, completato: true, documentoId: newDocId }
+            : item
+        );
+
+        const allMandatoryCompleted = updatedChecklist
+          .filter(item => item.obbligatorio)
+          .every(item => item.completato);
+
+        let newStato = p.stato;
+        if (p.stato === "da_verificare" && allMandatoryCompleted) {
+          newStato = "in_corso";
+        }
+
+        const newEvent = {
+          id: `ev-${Date.now()}`,
+          data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
+          titolo: "Documento Spuntato",
+          descrizione: `Hai registrato la presenza del file: ${fileNome} per la checklist di controllo.`
+        };
+
+        return {
+          ...p,
+          documentiNecessari: updatedChecklist,
+          stato: newStato,
+          cronologia: [...p.cronologia, newEvent],
+          dataAggiornamento: new Date().toISOString().split("T")[0]
+        };
+      });
+
+      // 1. Crea il documento standalone nell'archivio
+      const newDoc: Documento = {
+        id: newDocId,
+        nome: fileNome,
+        tipo: fileNome.split(".").pop()?.toUpperCase() || "PDF",
+        dimensione: "245 KB",
+        dataCaricamento: new Date().toISOString().split("T")[0],
+        collegatoAPercorsoId: percorsoId,
+        percorsoTitolo: percorsoTitolo,
+        stato: "valido"
+      };
+
+      setDocumenti(prevDocs => {
+        const docs = [newDoc, ...prevDocs];
+        DocumentiRepository.saveDocumenti(docs);
+        return docs;
+      });
+
+      PercorsiRepository.savePercorsi(updatedPercorsi);
+      return updatedPercorsi;
+    });
+  }, []);
+
+  // Rimuove un documento caricato da un elemento checklist
+  const removeDocument = useCallback((percorsoId: string, checklistItemId: string) => {
+    let docIdToRemove: string | undefined;
+
+    setPercorsi(prev => {
+      const updatedPercorsi = prev.map(p => {
+        if (p.id !== percorsoId) return p;
+
+        const updatedChecklist = p.documentiNecessari.map(item => {
+          if (item.id === checklistItemId) {
+            docIdToRemove = item.documentoId;
+            return { ...item, completato: false, documentoId: undefined };
+          }
+          return item;
+        });
+
+        const targetItem = p.documentiNecessari.find(i => i.id === checklistItemId);
+        let newStato = p.stato;
+        if (targetItem?.obbligatorio && p.stato === "in_corso") {
+          newStato = "da_verificare";
+        }
+
+        const newEvent = {
+          id: `ev-${Date.now()}`,
+          data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
+          titolo: "Documento Rimosso",
+          descrizione: "Hai deselezionato un documento obbligatorio. La checklist risulta incompleta."
+        };
+
+        return {
+          ...p,
+          documentiNecessari: updatedChecklist,
+          stato: newStato,
+          cronologia: [...p.cronologia, newEvent],
+          dataAggiornamento: new Date().toISOString().split("T")[0]
+        };
+      });
+
+      if (docIdToRemove) {
+        setDocumenti(prevDocs => {
+          const docs = prevDocs.filter(d => d.id !== docIdToRemove);
+          DocumentiRepository.saveDocumenti(docs);
+          return docs;
+        });
+      }
+
+      PercorsiRepository.savePercorsi(updatedPercorsi);
+      return updatedPercorsi;
+    });
+  }, []);
+
+  // Avvia una nuova guida dal catalogo dei servizi
+  const startPercorso = useCallback((servizioId: string) => {
+    const srv = SERVIZI_MOCK.find(s => s.id === servizioId);
+    if (!srv) return null;
+
+    let existingId: string | null = null;
+    setPercorsi(prev => {
+      const exists = prev.find(p => p.titolo.toLowerCase().includes(srv.titolo.toLowerCase()) && p.stato !== "completato");
+      if (exists) {
+        existingId = exists.id;
+        return prev;
+      }
+
+      const newPercorsoId = `percorso-${Date.now()}`;
+      const randomCode = `GUIDA-NEW-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const newPercorso: Percorso = {
+        id: newPercorsoId,
+        codice: randomCode,
+        titolo: `Guida per: ${srv.titolo}`,
+        descrizione: srv.descrizione,
+        categoria: srv.categoria,
+        stato: "bozza",
+        dataAggiornamento: new Date().toISOString().split("T")[0],
+        passoCorrente: 0,
+        totalePassi: 3,
+        passiNomi: ["Prepara Requisiti", "Collegamento Portale PA", "Conferma Domanda"],
+        passiDettagli: [
+          `Assicurati di possedere i seguenti requisiti: ${srv.requisiti.join(", ")}.`,
+          `Accedi al portale ufficiale "${srv.nomePortaleUfficiale}" all'indirizzo ${srv.linkPortaleUfficiale} usando la tua identità digitale.`,
+          `Una volta inviata la domanda sul portale ministeriale, segna come concluso questo percorso di guida.`
+        ],
+        documentiNecessari: srv.requisiti.map((req, index) => ({
+          id: `chk-new-${index}-${Date.now()}`,
+          testo: req,
+          completato: false,
+          obbligatorio: index === 0
+        })),
+        cronologia: [
+          {
+            id: `ev-new-${Date.now()}`,
+            data: new Date().toLocaleString("it-IT", { hour12: false }).replace(/\//g, "-").slice(0, 16),
+            titolo: "Percorso Guida Attivato",
+            descrizione: `Hai attivato la guida per: ${srv.titolo}. Segui i passi descritti.`
+          }
+        ],
+        linkPortaleUfficiale: srv.linkPortaleUfficiale,
+        nomePortaleUfficiale: srv.nomePortaleUfficiale
+      };
+
+      const updated = [newPercorso, ...prev];
+      PercorsiRepository.savePercorsi(updated);
+      existingId = newPercorsoId;
+      return updated;
+    });
+
+    return existingId;
+  }, []);
+
+  // Carica un documento standalone (indipendente da un percorso)
+  const uploadNewDoc = useCallback((nome: string, tipo: string, dimensione: string) => {
+    const newDoc: Documento = {
+      id: `doc-${Date.now()}`,
+      nome,
+      tipo,
+      dimensione,
+      dataCaricamento: new Date().toISOString().split("T")[0],
+      stato: "valido"
+    };
+    setDocumenti(prev => {
+      const updated = [newDoc, ...prev];
+      DocumentiRepository.saveDocumenti(updated);
+      return updated;
+    });
+  }, []);
+
+  // Rimuove in modo definitivo un documento dall'archivio locale
+  const deleteDoc = useCallback((id: string) => {
+    setDocumenti(prev => {
+      const updated = prev.filter(d => d.id !== id);
+      DocumentiRepository.saveDocumenti(updated);
+      return updated;
+    });
+
+    setPercorsi(prev => {
+      const updated = prev.map(p => ({
+        ...p,
+        documentiNecessari: p.documentiNecessari.map(item =>
+          item.documentoId === id
+            ? { ...item, completato: false, documentoId: undefined }
+            : item
+        )
+      }));
+      PercorsiRepository.savePercorsi(updated);
+      return updated;
+    });
+  }, []);
+
+  // Invia un messaggio in chat ed esegue la simulazione di risposta dell'assistente locale
+  const sendMessage = useCallback((testo: string) => {
+    const userMsg: Messaggio = {
+      id: `msg-user-${Date.now()}`,
+      mittente: "utente",
+      testo,
+      timestamp: new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })
+    };
+
+    setMessaggi(prev => {
+      const updated = [...prev, userMsg];
+      ChatRepository.saveMessaggi(updated);
+      
+      // Ritardo per simulazione risposta
+      setTimeout(() => {
+        let replyText = "";
+        let linkInterno: string | undefined;
+        let linkTesto: string | undefined;
+        let suggerimenti: string[] = [];
+        const query = testo.toLowerCase();
+
+        if (query.includes("scadenz") || query.includes("calendar")) {
+          const inSospeso = scadenze.filter(s => !s.completata);
+          replyText = `Attualmente hai ${inSospeso.length} scadenze amministrative importanti in sospeso:\n` +
+            inSospeso.map(s => `• ${s.titolo} (entro il ${s.data})`).join("\n") +
+            `\n\nPuoi visualizzare e aggiungere promemoria nel calendario delle scadenze.`;
+          linkInterno = "scadenze";
+          linkTesto = "Apri Calendario Scadenze";
+          suggerimenti = ["Documenti per il Cambio di Residenza", "Come posso rinnovare la CIE?"];
+        } else if (query.includes("cie") || query.includes("carta d'identità") || query.includes("carta identita")) {
+          const cie = percorsi.find(p => p.id === "percorso-1");
+          if (cie) {
+            replyText = `Hai una guida attiva per il rilascio della CIE (${cie.codice}).\n` +
+              `Sei al passo: "${cie.passiNomi[cie.passoCorrente]}".\n` +
+              `Il tuo appuntamento in Comune è programmato per il 2 luglio 2026 alle ore 10:30.\n` +
+              `Ricordati di raccogliere tutti i documenti obbligatori (foto tessera e ricevuta PagoPA) prima di recarti allo sportello.`;
+            linkInterno = "percorso-1";
+            linkTesto = "Apri Guida CIE";
+          } else {
+            replyText = `Per richiedere la Carta d'Identità Elettronica (CIE), devi prenotare un appuntamento sul portale ministeriale e pagare i diritti di segreteria (€22,21). Vuoi che ti mostri la guida?`;
+            linkInterno = "servizi";
+            linkTesto = "Sfoglia Catalogo Guide";
+          }
+          suggerimenti = ["Quali sono le mie scadenze?", "Come cambio residenza?"];
+        } else if (query.includes("residenza")) {
+          const res = percorsi.find(p => p.id === "percorso-3");
+          if (res) {
+            replyText = `Hai aperto la guida al 'Cambio di Residenza online'.\n` +
+              `Sei al passo: "${res.passiNomi[res.passoCorrente]}" (${res.passiDettagli[res.passoCorrente]}).\n` +
+              `Per compilare la domanda ufficiale, dovrai accedere con credenziali d'accesso o identità digitale al Portale ANPR Nazionale.`;
+            linkInterno = "percorso-3";
+            linkTesto = "Apri Guida Residenza";
+          } else {
+            replyText = `Il Cambio di Residenza online si compila sul portale nazionale ANPR. Avvia il percorso guida nel catalogo dei servizi per controllare l'elenco dei documenti catastali necessari.`;
+            linkInterno = "servizi";
+            linkTesto = "Sfoglia Catalogo Guide";
+          }
+          suggerimenti = ["Come richiedo l'Assegno Unico?", "Vedi le mie scadenze"];
+        } else if (query.includes("assegno") || query.includes("inps")) {
+          const au = percorsi.find(p => p.id === "percorso-2");
+          if (au && au.stato === "da_verificare") {
+            replyText = `Attenzione: Per l'Assegno Unico INPS hai una richiesta di integrazione documenti in sospeso.\n` +
+              `L'INPS richiede il caricamento del modulo di responsabilità firmato dall'altro genitore entro il 15 luglio 2026.`;
+            linkInterno = "percorso-2";
+            linkTesto = "Apri Guida Assegno Unico";
+          } else {
+            replyText = `L'Assegno Unico INPS richiede di compilare la domanda inserendo i dati dei figli e l'IBAN per l'accredito sul portale MyINPS. Ti consiglio di calcolare l'ISEE 2026 per ottenere la quota corretta.`;
+            linkInterno = "servizi";
+            linkTesto = "Apri Catalogo Guide";
+          }
+          suggerimenti = ["Documenti per il Cambio di Residenza", "Mostrami le mie scadenze"];
+        } else {
+          replyText = `Ho ricevuto la tua richiesta: "${testo}".\n\nIn quanto Software di Guida, posso darti istruzioni pratiche su come procedere. Prova a chiedermi delle "scadenze", del "Cambio di Residenza", della "CIE" o dell'assegno "INPS".`;
+          suggerimenti = ["Quali sono le mie scadenze?", "Come cambio residenza?", "Documenti per la CIE"];
+        }
+
+        const assistantMsg: Messaggio = {
+          id: `msg-ast-${Date.now()}`,
+          mittente: "assistente",
+          testo: replyText,
+          timestamp: new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }),
+          linkInterno,
+          linkTesto,
+          suggerimenti
+        };
+
+        setMessaggi(currentMsgs => {
+          const finalMsgs = [...currentMsgs, assistantMsg];
+          ChatRepository.saveMessaggi(finalMsgs);
+          return finalMsgs;
+        });
+      }, 850);
+
+      return updated;
+    });
+  }, [scadenze, percorsi]);
+
+  return {
+    profilo,
+    percorsi,
+    documenti,
+    scadenze,
+    messaggi,
+    updateProfile,
+    resetApp,
+    toggleScadenza,
+    addScadenza,
+    stepForward,
+    stepBackward,
+    uploadDocument,
+    removeDocument,
+    startPercorso,
+    uploadNewDoc,
+    deleteDoc,
+    sendMessage
+  };
+}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { ProfiloUtente as ProfiloUtenteType } from "../types";
-import { ProfileRepository } from "../repositories/profileRepository";
 import { 
   CheckCircledIcon, 
   TrashIcon,
@@ -71,16 +70,10 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
       consensoGeolocalizzazione: nuovoStato
     };
     
-    try {
-      ProfileRepository.saveProfile(updatedProfile);
-      onUpdate(updatedProfile);
-    } catch (err) {
-      console.error("Errore salvataggio consenso geolocalizzazione:", err);
-    }
+    onUpdate(updatedProfile);
   };
 
   const handleResetProfile = () => {
-    ProfileRepository.clearProfile();
     onReset();
   };
 
