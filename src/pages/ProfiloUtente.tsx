@@ -1,81 +1,63 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ProfiloUtente as ProfiloUtenteType } from "../types";
+import { GeolocationData } from "../repositories/geolocationRepository";
 import { 
   CheckCircledIcon, 
   TrashIcon,
-  LoopIcon
+  LoopIcon,
+  InfoCircledIcon
 } from "@radix-ui/react-icons";
 
 interface ProfiloUtenteProps {
   profilo: ProfiloUtenteType;
-  onUpdate: (nuovoProfilo: ProfiloUtenteType) => void;
   onReset: () => void;
   onNavigate: (page: string) => void;
+  geodata: GeolocationData;
+  loadingGeoloc: boolean;
+  geolocError: string | null;
+  onRichiediGeolocalizzazione: () => void;
+  onRevocaGeolocalizzazione: () => void;
 }
 
+/**
+ * Schermata del Profilo Utente Locale.
+ * Consente la visualizzazione dell'anagrafica locale, il controllo della geolocalizzazione GPS
+ * e la rimozione totale dei dati dal computer dell'utente.
+ */
 export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
   profilo,
-  onUpdate,
   onReset,
-  onNavigate
+  onNavigate,
+  geodata,
+  loadingGeoloc,
+  geolocError,
+  onRichiediGeolocalizzazione,
+  onRevocaGeolocalizzazione
 }) => {
-  const [geolocActive, setGeolocActive] = useState(profilo.consensoGeolocalizzazione);
-  const [simulatedCoords, setSimulatedCoords] = useState<{ lat: string; lon: string } | null>(null);
-  const [loadingGeoloc, setLoadingGeoloc] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   
-  // Anti-spam click guardrail
+  // Anti-spam guardrail temporale locale
   const [lastActionTime, setLastActionTime] = useState(0);
-
-  useEffect(() => {
-    if (geolocActive) {
-      simulateGeolocLookup();
-    } else {
-      setSimulatedCoords(null);
-    }
-  }, [geolocActive, profilo.comune]);
-
-  const simulateGeolocLookup = () => {
-    setLoadingGeoloc(true);
-    // Simula ritardo di rete locale/OS
-    const timer = setTimeout(() => {
-      // Coordinate simulate basate sulla prima lettera del comune per diversificare leggermente
-      const charCodeSum = profilo.comune.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const latVal = (41.8719 + (charCodeSum % 100) / 30).toFixed(4);
-      const lonVal = (12.5674 + (charCodeSum % 100) / 40).toFixed(4);
-      
-      setSimulatedCoords({
-        lat: `${latVal} N`,
-        lon: `${lonVal} E`
-      });
-      setLoadingGeoloc(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  };
 
   const handleToggleGeoloc = () => {
     const ora = Date.now();
-    if (ora - lastActionTime < 600) {
-      // Evita spam-click rapidi
-      return;
+    if (ora - lastActionTime < 1000) {
+      return; // Previene invii multipli rapidi
     }
     setLastActionTime(ora);
 
-    const nuovoStato = !geolocActive;
-    setGeolocActive(nuovoStato);
-    
-    const updatedProfile = {
-      ...profilo,
-      consensoGeolocalizzazione: nuovoStato
-    };
-    
-    onUpdate(updatedProfile);
+    if (geodata.statoPermesso === 'concesso') {
+      onRevocaGeolocalizzazione();
+    } else {
+      onRichiediGeolocalizzazione();
+    }
   };
 
   const handleResetProfile = () => {
     onReset();
   };
+
+  const isGeolocActive = geodata.statoPermesso === 'concesso' && geodata.coordinate !== null;
 
   return (
     <div className="profilo-page-container">
@@ -142,7 +124,7 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
           </div>
         </div>
 
-        {/* Dati di Contatto opzionali */}
+        {/* Dati di Contatto */}
         <div className="profile-section-card">
           <h4>Recapiti di Contatto</h4>
           <div className="detail-rows">
@@ -164,7 +146,7 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
         </div>
       </div>
 
-      {/* Sezione Geolocalizzazione */}
+      {/* Sezione Geolocalizzazione Reale */}
       <div className="card w-full">
         <div className="card-header" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
           <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)" }}>
@@ -174,7 +156,7 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
         
         <div className="card-body" style={{ padding: "var(--space-md)", display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
           <p style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)", lineHeight: "1.4" }}>
-            La geolocalizzazione consente all'applicazione di individuare l'area di appartenenza dell'utente e suggerire automaticamente le sedi fisiche dei Comuni e degli uffici INPS territoriali. L'elaborazione avviene interamente in locale.
+            La geolocalizzazione consente all'applicazione di individuare in modo approssimativo la tua posizione per suggerirti gli uffici pubblici più vicini. L'elaborazione avviene interamente in locale sul tuo computer per tutelare la privacy.
           </p>
 
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", flexWrap: "wrap" }}>
@@ -183,22 +165,37 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
               <span style={{ 
                 fontSize: "0.9rem", 
                 fontWeight: 700, 
-                color: geolocActive ? "var(--color-success)" : "var(--color-text-secondary)" 
+                color: isGeolocActive ? "var(--color-success)" : "var(--color-text-secondary)" 
               }}>
-                {geolocActive ? "Attiva (Opzionale)" : "Disattivata"}
+                {isGeolocActive ? "Attiva (Reale)" : "Disattivata"}
               </span>
             </div>
             
             <button 
-              className={`btn ${geolocActive ? "btn-secondary" : "btn-primary"}`} 
+              className={`btn ${isGeolocActive ? "btn-secondary" : "btn-primary"}`} 
               onClick={handleToggleGeoloc}
+              disabled={loadingGeoloc}
               style={{ fontSize: "0.85rem", padding: "6px 12px" }}
             >
-              {geolocActive ? "Disattiva localizzazione" : "Abilita localizzazione"}
+              {isGeolocActive ? "Disattiva localizzazione" : "Abilita localizzazione"}
             </button>
           </div>
 
-          {geolocActive && (
+          {geolocError && (
+            <div className="flex items-center gap-sm" style={{ color: "var(--color-danger)", fontSize: "0.85rem", marginTop: "var(--space-xs)" }}>
+              <InfoCircledIcon />
+              <span>{geolocError}</span>
+            </div>
+          )}
+
+          {loadingGeoloc && (
+            <div className="flex items-center gap-sm" style={{ color: "var(--color-text-secondary)", marginTop: "var(--space-sm)" }}>
+              <LoopIcon className="animate-spin" />
+              <span>Interrogazione sensori GPS del dispositivo in corso...</span>
+            </div>
+          )}
+
+          {isGeolocActive && geodata.coordinate && geodata.closestCity && (
             <div style={{ 
               padding: "var(--space-md)", 
               backgroundColor: "var(--color-background)", 
@@ -206,42 +203,35 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
               border: "1px solid var(--color-border)",
               marginTop: "var(--space-sm)"
             }}>
-              {loadingGeoloc ? (
-                <div className="flex items-center gap-sm" style={{ color: "var(--color-text-secondary)" }}>
-                  <LoopIcon className="animate-spin" />
-                  <span>Rilevamento coordinate GPS in corso...</span>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", fontSize: "0.85rem" }}>
+                <div>
+                  <strong style={{ display: "block" }}>Coordinate Rilevate (GPS reali):</strong>
+                  <span className="font-mono" style={{ color: "var(--color-text-secondary)" }}>
+                    {geodata.coordinate.lat.toFixed(6)}, {geodata.coordinate.lon.toFixed(6)}
+                  </span>
                 </div>
-              ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", fontSize: "0.85rem" }}>
-                  <div>
-                    <strong style={{ display: "block" }}>Coordinate Rilevate (GPS):</strong>
-                    <span className="font-mono" style={{ color: "var(--color-text-secondary)" }}>
-                      {simulatedCoords ? `${simulatedCoords.lat}, ${simulatedCoords.lon}` : "Dati non disponibili"}
-                    </span>
-                  </div>
-                  
-                  <div>
-                    <strong style={{ display: "block" }}>Ufficio Anagrafe suggerito:</strong>
-                    <span style={{ color: "var(--color-text-secondary)" }}>
-                      Ufficio Anagrafe Centrale - Comune di {profilo.comune}
-                    </span>
-                  </div>
-
-                  <div>
-                    <strong style={{ display: "block" }}>Precisione di rilevamento:</strong>
-                    <span style={{ color: "var(--color-text-secondary)" }}>
-                      Approssimativa (Livello Comune)
-                    </span>
-                  </div>
-
-                  <div>
-                    <strong style={{ display: "block" }}>Sportello Previdenziale:</strong>
-                    <span style={{ color: "var(--color-text-secondary)" }}>
-                      Sede Territoriale INPS - Area di {profilo.comune}
-                    </span>
-                  </div>
+                
+                <div>
+                  <strong style={{ display: "block" }}>Capoluogo di Provincia più vicino:</strong>
+                  <span style={{ color: "var(--color-text-secondary)" }}>
+                    {geodata.closestCity.nome} ({geodata.closestCity.provincia}) - Distante {geodata.closestCity.distanzaKm} km
+                  </span>
                 </div>
-              )}
+
+                <div>
+                  <strong style={{ display: "block" }}>Precisione di rilevamento:</strong>
+                  <span style={{ color: "var(--color-text-secondary)" }}>
+                    Approssimativa (Livello Provincia)
+                  </span>
+                </div>
+
+                <div>
+                  <strong style={{ display: "block" }}>Ufficio territorialmente suggerito:</strong>
+                  <span style={{ color: "var(--color-text-secondary)" }}>
+                    Sedi Demografiche ed uffici INPS nella provincia di {geodata.closestCity.nome}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
         </div>

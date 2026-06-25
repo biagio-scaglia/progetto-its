@@ -122,9 +122,6 @@ export class ProfileRepository {
     }
   }
 
-  /**
-   * Rimuove in modo permanente tutti i dati dell'applicazione dal dispositivo.
-   */
   static clearAllData(): void {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -132,6 +129,7 @@ export class ProfileRepository {
       localStorage.removeItem("servizidigitali_documenti");
       localStorage.removeItem("servizidigitali_scadenze");
       localStorage.removeItem("servizidigitali_chat");
+      localStorage.removeItem("servizidigitali_posizione");
     } catch (error) {
       console.error("Errore durante il reset completo di tutti i dati applicativi:", error);
     }

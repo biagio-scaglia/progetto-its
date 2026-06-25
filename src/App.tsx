@@ -33,6 +33,9 @@ function App() {
     documenti,
     scadenze,
     messaggi,
+    geodata,
+    loadingGeoloc,
+    geolocError,
     updateProfile,
     resetApp,
     toggleScadenza,
@@ -44,7 +47,9 @@ function App() {
     startPercorso,
     uploadNewDoc,
     deleteDoc,
-    sendMessage
+    sendMessage,
+    richiediGeolocalizzazione,
+    revocaGeolocalizzazione
   } = useAppState();
 
   // Stato della Navigazione locale della UI
@@ -182,9 +187,13 @@ function App() {
       {currentPage === "profilo" && (
         <ProfiloUtente
           profilo={profilo}
-          onUpdate={updateProfile}
           onReset={resetApp}
           onNavigate={handleNavigate}
+          geodata={geodata}
+          loadingGeoloc={loadingGeoloc}
+          geolocError={geolocError}
+          onRichiediGeolocalizzazione={richiediGeolocalizzazione}
+          onRevocaGeolocalizzazione={revocaGeolocalizzazione}
         />
       )}
 
@@ -192,6 +201,9 @@ function App() {
         <Impostazioni
           profilo={profilo}
           onUpdate={updateProfile}
+          geodata={geodata}
+          onRichiediGeolocalizzazione={richiediGeolocalizzazione}
+          onRevocaGeolocalizzazione={revocaGeolocalizzazione}
         />
       )}
     </AppShell>

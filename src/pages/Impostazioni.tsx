@@ -3,16 +3,23 @@ import { Button } from "../components/ui/Button";
 import { Alert } from "../components/ui/Alert";
 import { ProfiloUtente as ProfiloUtenteType } from "../types";
 import { contieneEmoji } from "../repositories/profileRepository";
+import { GeolocationData } from "../repositories/geolocationRepository";
 import { PersonIcon, AccessibilityIcon, LockClosedIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 
 interface ImpostazioniProps {
   profilo: ProfiloUtenteType;
   onUpdate: (nuovoProfilo: ProfiloUtenteType) => void;
+  geodata: GeolocationData;
+  onRichiediGeolocalizzazione: () => void;
+  onRevocaGeolocalizzazione: () => void;
 }
 
 export const Impostazioni: React.FC<ImpostazioniProps> = ({
   profilo,
-  onUpdate
+  onUpdate,
+  geodata,
+  onRichiediGeolocalizzazione,
+  onRevocaGeolocalizzazione
 }) => {
   // Form States initialized from the current profile
   const [nome, setNome] = useState(profilo.nome);
@@ -22,9 +29,6 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
   const [email, setEmail] = useState(profilo.email || "");
   const [tel, setTel] = useState(profilo.cellulare || "");
   
-  // Privacy & Geoloc States
-  const [consensoGeoloc, setConsensoGeoloc] = useState(profilo.consensoGeolocalizzazione);
-
   // Preference States
   const [reducedMotion, setReducedMotion] = useState(false);
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -80,7 +84,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
         provincia: provincia.trim().toUpperCase() || undefined,
         email: email.trim() || undefined,
         cellulare: tel.trim() || undefined,
-        consensoGeolocalizzazione: consensoGeoloc
+        consensoGeolocalizzazione: geodata.statoPermesso === 'concesso'
       };
 
       // Aggiorna lo stato tramite hook
@@ -309,8 +313,14 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   <input 
                     id="opt-geoloc"
                     type="checkbox"
-                    checked={consensoGeoloc}
-                    onChange={e => setConsensoGeoloc(e.target.checked)}
+                    checked={geodata.statoPermesso === 'concesso'}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        onRichiediGeolocalizzazione();
+                      } else {
+                        onRevocaGeolocalizzazione();
+                      }
+                    }}
                     style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "var(--color-primary)" }}
                   />
                   <label htmlFor="opt-geoloc" style={{ fontWeight: 600, color: "var(--color-text-primary)", cursor: "pointer" }}>

@@ -12,6 +12,8 @@ import { PercorsiRepository } from "../repositories/percorsiRepository";
 import { DocumentiRepository } from "../repositories/documentiRepository";
 import { ScadenzeRepository } from "../repositories/scadenzeRepository";
 import { ChatRepository } from "../repositories/chatRepository";
+import { GeolocationRepository, GeolocationData } from "../repositories/geolocationRepository";
+import { GeolocationService } from "../services/geolocationService";
 import { SERVIZI_MOCK } from "../mockData";
 
 /**
@@ -44,16 +46,106 @@ export function useAppState() {
     ChatRepository.getMessaggi()
   );
 
+  // Stato della geolocalizzazione reale
+  const [geodata, setGeodata] = useState<GeolocationData>(() =>
+    GeolocationRepository.getGeodata()
+  );
+  const [loadingGeoloc, setLoadingGeoloc] = useState<boolean>(false);
+  const [geolocError, setGeolocError] = useState<string | null>(null);
+
   // Aggiorna il profilo utente
   const updateProfile = useCallback((nuovoProfilo: ProfiloUtente) => {
     ProfileRepository.saveProfile(nuovoProfilo);
     setProfilo(nuovoProfilo);
   }, []);
 
+  // Richiede l'accesso GPS reale e aggiorna coordinate e comune più vicino
+  const richiediGeolocalizzazione = useCallback(async () => {
+    setLoadingGeoloc(true);
+    setGeolocError(null);
+    try {
+      const position = await GeolocationService.getCurrentPosition();
+      const { latitude, longitude } = position.coords;
+      const closest = GeolocationService.trovaCapoluogoPiuVicino(latitude, longitude);
+      
+      const newGeodata: GeolocationData = {
+        statoPermesso: 'concesso',
+        coordinate: {
+          lat: latitude,
+          lon: longitude,
+          timestamp: position.timestamp
+        },
+        closestCity: closest
+      };
+      
+      GeolocationRepository.saveGeodata(newGeodata);
+      setGeodata(newGeodata);
+      
+      // Sincronizza il consensoGeolocalizzazione a true nel profilo
+      if (profilo) {
+        const nuovoProfilo = { ...profilo, consensoGeolocalizzazione: true };
+        ProfileRepository.saveProfile(nuovoProfilo);
+        setProfilo(nuovoProfilo);
+      }
+    } catch (err: any) {
+      let errMsg = "Errore durante il rilevamento della posizione.";
+      let permessoStato: 'negato' | 'ignoto' = 'ignoto';
+      
+      // Mappatura codici errore Geolocation API standard
+      if (err.code === 1) { // PERMISSION_DENIED
+        errMsg = "Permesso negato dall'utente o dal sistema operativo.";
+        permessoStato = 'negato';
+      } else if (err.code === 2) { // POSITION_UNAVAILABLE
+        errMsg = "Informazioni di localizzazione non disponibili sul dispositivo.";
+      } else if (err.code === 3) { // TIMEOUT
+        errMsg = "Tempo massimo per il rilevamento della posizione esaurito.";
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      
+      setGeolocError(errMsg);
+      
+      const newGeodata: GeolocationData = {
+        statoPermesso: permessoStato,
+        coordinate: null,
+        closestCity: null
+      };
+      GeolocationRepository.saveGeodata(newGeodata);
+      setGeodata(newGeodata);
+      
+      // Rilasciamo il consenso nel profilo se c'è stato un rifiuto
+      if (profilo && profilo.consensoGeolocalizzazione) {
+        const nuovoProfilo = { ...profilo, consensoGeolocalizzazione: false };
+        ProfileRepository.saveProfile(nuovoProfilo);
+        setProfilo(nuovoProfilo);
+      }
+    } finally {
+      setLoadingGeoloc(false);
+    }
+  }, [profilo]);
+
+  // Revoca il consenso ed elimina tutti i dati geografici reali salvati
+  const revocaGeolocalizzazione = useCallback(() => {
+    GeolocationRepository.clearGeodata();
+    setGeodata({
+      statoPermesso: 'negato',
+      coordinate: null,
+      closestCity: null
+    });
+    setGeolocError(null);
+    
+    if (profilo) {
+      const nuovoProfilo = { ...profilo, consensoGeolocalizzazione: false };
+      ProfileRepository.saveProfile(nuovoProfilo);
+      setProfilo(nuovoProfilo);
+    }
+  }, [profilo]);
+
   // Ripristina l'applicazione allo stato iniziale (cancella tutto)
   const resetApp = useCallback(() => {
     ProfileRepository.clearAllData();
     setProfilo(null);
+    
     // Ricarica i dati dai valori mock iniziali o vuoti
     const initialPercorsi = PercorsiRepository.getPercorsi();
     const initialDocumenti = DocumentiRepository.getDocumenti();
@@ -64,6 +156,14 @@ export function useAppState() {
     setDocumenti(initialDocumenti);
     setScadenze(initialScadenze);
     setMessaggi(initialMessaggi);
+
+    // Reset geodata
+    setGeodata({
+      statoPermesso: 'ignoto',
+      coordinate: null,
+      closestCity: null
+    });
+    setGeolocError(null);
   }, []);
 
   // Cambia stato di completamento di una scadenza
@@ -467,6 +567,9 @@ export function useAppState() {
     documenti,
     scadenze,
     messaggi,
+    geodata,
+    loadingGeoloc,
+    geolocError,
     updateProfile,
     resetApp,
     toggleScadenza,
@@ -478,6 +581,8 @@ export function useAppState() {
     startPercorso,
     uploadNewDoc,
     deleteDoc,
-    sendMessage
+    sendMessage,
+    richiediGeolocalizzazione,
+    revocaGeolocalizzazione
   };
 }
