@@ -6,14 +6,30 @@ export interface TopBarProps {
   subtitle?: string;
   onOpenAssistant?: () => void;
   showAssistantToggle?: boolean;
+  userName?: string;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   title,
   subtitle = "Repubblica Italiana",
   onOpenAssistant,
-  showAssistantToggle = true
+  showAssistantToggle = true,
+  userName
 }) => {
+  const getInitials = (nameStr: string) => {
+    const parts = nameStr.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    if (parts.length === 1 && parts[0]) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    return "UL";
+  };
+
+  const displayName = userName || "Utente locale";
+  const initials = getInitials(displayName);
+
   return (
     <header className="app-topbar">
       <div className="topbar-left">
@@ -48,10 +64,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           }} />
         </button>
 
-        <div className="user-profile-badge" aria-label="Profilo Cittadino: Biagio Scaglia">
-          <div className="user-avatar-initials" aria-hidden="true">BS</div>
+        <div className="user-profile-badge" aria-label={`Profilo Cittadino: ${displayName}`}>
+          <div className="user-avatar-initials" aria-hidden="true">{initials}</div>
           <span className="sr-only">Accesso effettuato come</span>
-          <span style={{ color: "var(--color-text-primary)" }}>Biagio Scaglia</span>
+          <span style={{ color: "var(--color-text-primary)" }}>{displayName}</span>
         </div>
       </div>
     </header>

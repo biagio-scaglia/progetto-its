@@ -9,6 +9,7 @@ export interface AppShellProps {
   pageSubtitle?: string;
   children: React.ReactNode;
   lateralPanel?: React.ReactNode;
+  userName?: string;
 }
 
 export const AppShell: React.FC<AppShellProps> = ({
@@ -17,7 +18,8 @@ export const AppShell: React.FC<AppShellProps> = ({
   pageTitle,
   pageSubtitle,
   children,
-  lateralPanel
+  lateralPanel,
+  userName
 }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -40,6 +42,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           subtitle={pageSubtitle}
           onOpenAssistant={currentPage !== "assistente" ? () => onNavigate("assistente") : undefined}
           showAssistantToggle={currentPage !== "assistente"}
+          userName={userName}
         />
         
         <div className="app-content-wrapper">

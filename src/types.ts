@@ -83,27 +83,15 @@ export interface Messaggio {
   suggerimenti?: string[];
 }
 
-export interface ProfiloCittadino {
-  spidCode?: string;
+export interface ProfiloUtente {
   nome: string;
   cognome: string;
-  codiceFiscale: string;
-  sesso?: string; // M, F
-  dataNascita?: string; // YYYY-MM-DD
-  luogoNascita?: string;
-  provinciaNascita?: string;
-  email: string;
+  comune: string;
+  provincia?: string;
+  email?: string;
   cellulare?: string;
-  indirizzoDomicilio?: string;
-  pec?: string;
-  providerAutenticazione?: string; // es. "PosteID", "Sielte", etc.
-  tipoIdentita: "SPID" | "CIE" | "Locale";
-}
-
-export interface SpidSessionState {
-  isAuthenticated: boolean;
-  token?: string;
-  profilo?: ProfiloCittadino;
-  dataAutenticazione?: string;
-  scadenzaSessione?: string;
+  onboardingCompletato: boolean;
+  consensoPrivacy: boolean;
+  consensoGeolocalizzazione: boolean;
+  dataRegistrazione?: string;
 }
