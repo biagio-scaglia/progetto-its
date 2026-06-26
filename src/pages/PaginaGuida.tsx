@@ -5,6 +5,8 @@ import { Button } from "../components/ui/Button";
 import { ExternalLinkIcon, DownloadIcon, CheckCircledIcon } from "@radix-ui/react-icons";
 import { StepList } from "../components/guida/StepList";
 import { DocumentChecklist } from "../components/guida/DocumentChecklist";
+import { TTSButton } from "../components/ui/TTSButton";
+import { getPercorsoVisual } from "../config/serviceVisuals";
 
 export interface PaginaGuidaProps {
   percorso: Percorso;
@@ -262,22 +264,67 @@ export const PaginaGuida: React.FC<PaginaGuidaProps> = ({
 
       {/* Vista su Schermo */}
       <div className="screen-only no-print">
-        {/* Intestazione Guida */}
-        <div className="page-header" style={{ marginBottom: "var(--space-lg)" }}>
-          <div>
-            <div className="flex items-center gap-sm mb-xs">
-              <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-primary)" }}>
-                {percorso.categoria}
-              </span>
-            </div>
-            <h2 className="page-title">{percorso.titolo}</h2>
-            <p className="page-subtitle">{percorso.descrizione}</p>
-          </div>
-          
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)" }}>
-            <StatusBadge stato={percorso.stato} />
-          </div>
-        </div>
+        {/* Visual Thumbnail Banner */}
+        {(() => {
+          const visual = getPercorsoVisual(percorso.id);
+          const IconComp = visual.icon;
+          return (
+            <>
+              <div
+                style={{
+                  backgroundColor: visual.accentBg,
+                  borderRadius: "var(--radius-lg)",
+                  padding: "var(--space-md) var(--space-lg)",
+                  marginBottom: "var(--space-lg)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: `1px solid ${visual.accentColor}18`
+                }}
+                aria-hidden="true"
+              >
+                <visual.Thumbnail
+                  style={{
+                    width: "100%",
+                    maxWidth: "240px",
+                    height: "auto",
+                    opacity: 0.9
+                  }}
+                />
+              </div>
+
+              {/* Intestazione Guida */}
+              <div className="page-header" style={{ marginBottom: "var(--space-lg)" }}>
+                <div>
+                  <div className="flex items-center gap-sm mb-xs">
+                    <IconComp
+                      aria-hidden="true"
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        color: visual.accentColor,
+                        flexShrink: 0
+                      }}
+                    />
+                    <span style={{ fontSize: "0.9rem", fontWeight: 600, color: visual.accentColor }}>
+                      {percorso.categoria}
+                    </span>
+                  </div>
+                  <h2 className="page-title">{percorso.titolo}</h2>
+                  <p className="page-subtitle">{percorso.descrizione}</p>
+                </div>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", flexWrap: "wrap" }}>
+                  <TTSButton 
+                    text={`Guida per ${percorso.titolo}. ${percorso.descrizione}. I passaggi da seguire sono: ${percorso.passiNomi.join(". ")}`}
+                    ariaLabel="Ascolta le istruzioni della guida"
+                  />
+                  <StatusBadge stato={percorso.stato} />
+                </div>
+              </div>
+            </>
+          );
+        })()}
 
         {/* Box Principale di Collegamento Istituzionale */}
         <div 

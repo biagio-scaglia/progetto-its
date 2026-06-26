@@ -1,5 +1,4 @@
 import React from "react";
-import { BellIcon } from "@radix-ui/react-icons";
 
 export interface TopBarProps {
   title: string;
@@ -50,19 +49,6 @@ export const TopBar: React.FC<TopBarProps> = ({
             Chiedi all'Assistente
           </button>
         )}
-        
-        <button className="btn-icon" aria-label="Notifiche" style={{ position: "relative" }}>
-          <BellIcon />
-          <span style={{
-            position: "absolute",
-            top: "6px",
-            right: "6px",
-            width: "8px",
-            height: "8px",
-            backgroundColor: "var(--color-danger)",
-            borderRadius: "50%"
-          }} />
-        </button>
 
         <div className="user-profile-badge" aria-label={`Profilo Cittadino: ${displayName}`}>
           <div className="user-avatar-initials" aria-hidden="true">{initials}</div>

@@ -31,8 +31,30 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
   
   // Preference States
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [emailAlerts, setEmailAlerts] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
+  const [largeText, setLargeText] = useState(() => localStorage.getItem("pref-large-text") === "true");
+  const [enableTTS, setEnableTTS] = useState(() => localStorage.getItem("pref-enable-tts") !== "false");
+
+  const handleLargeTextToggle = (checked: boolean) => {
+    setLargeText(checked);
+    if (checked) {
+      document.body.classList.add("accessibility-large-text");
+      localStorage.setItem("pref-large-text", "true");
+    } else {
+      document.body.classList.remove("accessibility-large-text");
+      localStorage.setItem("pref-large-text", "false");
+    }
+  };
+
+  const handleTTSToggle = (checked: boolean) => {
+    setEnableTTS(checked);
+    if (checked) {
+      localStorage.setItem("pref-enable-tts", "true");
+    } else {
+      localStorage.setItem("pref-enable-tts", "false");
+      window.speechSynthesis.cancel();
+    }
+  };
 
   // Status message states
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -250,17 +272,33 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
 
               <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-md)" }}>
                 <div>
-                  <strong style={{ display: "block", fontSize: "0.95rem" }}>Notifiche email per scadenze</strong>
+                  <strong style={{ display: "block", fontSize: "0.95rem" }}>Caratteri ingranditi (Zoom testo)</strong>
                   <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                    Invia promemoria locali prima della data programmata delle guide attive.
+                    Aumenta la dimensione del testo dell'applicazione per facilitare la lettura.
                   </span>
                 </div>
                 <input 
                   type="checkbox" 
-                  checked={emailAlerts} 
-                  onChange={e => setEmailAlerts(e.target.checked)}
+                  checked={largeText} 
+                  onChange={e => handleLargeTextToggle(e.target.checked)}
                   style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
-                  aria-label="Attiva notifiche scadenze"
+                  aria-label="Attiva caratteri ingranditi"
+                />
+              </div>
+
+              <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-md)" }}>
+                <div>
+                  <strong style={{ display: "block", fontSize: "0.95rem" }}>Abilita Lettura Vocale (TTS)</strong>
+                  <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                    Mostra i pulsanti per ascoltare la lettura vocale dei contenuti principali dell'applicazione.
+                  </span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={enableTTS} 
+                  onChange={e => handleTTSToggle(e.target.checked)}
+                  style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  aria-label="Attiva lettura vocale"
                 />
               </div>
 

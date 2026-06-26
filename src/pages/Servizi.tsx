@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Servizio } from "../types";
 import { MagnifyingGlassIcon, EnterIcon, StarFilledIcon, Cross2Icon } from "@radix-ui/react-icons";
+import { getServiceVisual, getCategoryIcon } from "../config/serviceVisuals";
 
 export interface ServiziProps {
   servizi: Servizio[];
@@ -73,7 +74,7 @@ export const Servizi: React.FC<ServiziProps> = ({
           </div>
         </div>
 
-        {/* Tab Categorie */}
+        {/* Tab Categorie con icone */}
         <div 
           className="flex" 
           style={{ 
@@ -89,6 +90,7 @@ export const Servizi: React.FC<ServiziProps> = ({
           {categories.map((cat) => {
             const isSelected = activeCategory === cat;
             const label = cat === "tutte" ? "Tutti i servizi" : cat;
+            const CategoryIconComp = cat === "tutte" ? null : getCategoryIcon(cat);
             return (
               <button
                 key={cat}
@@ -105,9 +107,13 @@ export const Servizi: React.FC<ServiziProps> = ({
                   fontWeight: isSelected ? "600" : "500",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
-                  outlineOffset: "-3px"
+                  outlineOffset: "-3px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px"
                 }}
               >
+                {CategoryIconComp && <CategoryIconComp aria-hidden="true" style={{ width: "15px", height: "15px", flexShrink: 0 }} />}
                 {label}
               </button>
             );
@@ -133,74 +139,117 @@ export const Servizi: React.FC<ServiziProps> = ({
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "var(--space-lg)" }}>
-          {filteredServizi.map((srv) => (
-            <div key={srv.id} className="card w-full" style={{ height: "100%", justifyContent: "space-between" }}>
-              <div className="card-body" style={{ padding: "var(--space-lg)", display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
-                <div>
-                  <div className="flex justify-between items-center mb-xs">
-                    <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-primary)", textTransform: "uppercase" }}>
-                      {srv.categoria}
-                    </span>
-                    {srv.popolare && (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "2px", fontSize: "0.75rem", color: "var(--color-warning)", fontWeight: 600 }}>
-                        <StarFilledIcon /> Consigliato
-                      </span>
-                    )}
-                  </div>
-                  
-                  <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "var(--color-dark-blue)", lineHeight: 1.3, marginBottom: "var(--space-xs)" }}>
-                    {srv.titolo}
-                  </h3>
-                  
-                  <p style={{ color: "var(--color-text-secondary)", fontSize: "0.9rem", lineHeight: "1.4" }}>
-                    {srv.descrizione}
-                  </p>
-                </div>
+          {filteredServizi.map((srv) => {
+            const visual = getServiceVisual(srv.id);
+            const IconComp = visual.icon;
 
-                {/* Requisiti */}
-                <div>
-                  <h4 style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-primary)", marginBottom: "4px" }}>
-                    Requisiti di base necessari:
-                  </h4>
-                  <ul style={{ paddingLeft: "18px", fontSize: "0.8rem", color: "var(--color-text-secondary)", display: "flex", flexDirection: "column", gap: "2px" }}>
-                    {srv.requisiti.map((req, i) => (
-                      <li key={i}>{req}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Portale PA */}
-                <div style={{ backgroundColor: "var(--color-background)", padding: "var(--space-sm)", borderRadius: "var(--radius-sm)", fontSize: "0.8rem" }}>
-                  <span style={{ color: "var(--color-text-secondary)" }}>Portale PA di completamento:</span>
-                  <span style={{ display: "block", color: "var(--color-primary)", marginTop: "2px", fontWeight: 600 }}>
-                    {srv.nomePortaleUfficiale}
-                  </span>
-                </div>
-
-                {/* Metadati */}
-                <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-sm)", fontSize: "0.8rem", display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <div>
-                    <span style={{ color: "var(--color-text-secondary)" }}>Tempo medio di istruttoria: </span>
-                    <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{srv.tempoStimato}</span>
-                  </div>
-                  <div>
-                    <span style={{ color: "var(--color-text-secondary)" }}>Ufficio competente: </span>
-                    <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{srv.ufficioCompetente}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="card-footer" style={{ padding: "var(--space-md) var(--space-lg)" }}>
-                <button
-                  className="btn btn-primary w-full"
-                  onClick={() => onStartPercorso(srv.id)}
-                  style={{ gap: "6px" }}
+            return (
+              <div key={srv.id} className="card w-full" style={{ height: "100%", justifyContent: "space-between", overflow: "hidden" }}>
+                {/* Thumbnail Hero */}
+                <div 
+                  style={{ 
+                    position: "relative",
+                    backgroundColor: visual.accentBg,
+                    borderBottom: `1px solid ${visual.accentColor}18`,
+                    padding: "var(--space-sm) var(--space-lg)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "90px"
+                  }}
+                  aria-hidden="true"
                 >
-                  Apri Guida al Servizio <EnterIcon />
-                </button>
+                  <visual.Thumbnail 
+                    style={{ 
+                      width: "100%", 
+                      maxWidth: "200px", 
+                      height: "auto",
+                      opacity: 0.85
+                    }} 
+                  />
+                </div>
+
+                <div className="card-body" style={{ padding: "var(--space-lg)", display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
+                  <div>
+                    <div className="flex justify-between items-center mb-xs">
+                      <span 
+                        style={{ 
+                          fontSize: "0.8rem", 
+                          fontWeight: 600, 
+                          color: visual.accentColor, 
+                          textTransform: "uppercase",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px"
+                        }}
+                      >
+                        <IconComp 
+                          aria-hidden="true" 
+                          style={{ width: "14px", height: "14px", flexShrink: 0 }} 
+                        />
+                        {srv.categoria}
+                      </span>
+                      {srv.popolare && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "2px", fontSize: "0.75rem", color: "var(--color-warning)", fontWeight: 600 }}>
+                          <StarFilledIcon aria-hidden="true" /> Consigliato
+                        </span>
+                      )}
+                    </div>
+                    
+                    <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "var(--color-dark-blue)", lineHeight: 1.3, marginBottom: "var(--space-xs)" }}>
+                      {srv.titolo}
+                    </h3>
+                    
+                    <p style={{ color: "var(--color-text-secondary)", fontSize: "0.9rem", lineHeight: "1.4" }}>
+                      {srv.descrizione}
+                    </p>
+                  </div>
+
+                  {/* Requisiti */}
+                  <div>
+                    <h4 style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-primary)", marginBottom: "4px" }}>
+                      Requisiti di base necessari:
+                    </h4>
+                    <ul style={{ paddingLeft: "18px", fontSize: "0.8rem", color: "var(--color-text-secondary)", display: "flex", flexDirection: "column", gap: "2px" }}>
+                      {srv.requisiti.map((req, i) => (
+                        <li key={i}>{req}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Portale PA */}
+                  <div style={{ backgroundColor: "var(--color-background)", padding: "var(--space-sm)", borderRadius: "var(--radius-sm)", fontSize: "0.8rem" }}>
+                    <span style={{ color: "var(--color-text-secondary)" }}>Portale PA di completamento:</span>
+                    <span style={{ display: "block", color: "var(--color-primary)", marginTop: "2px", fontWeight: 600 }}>
+                      {srv.nomePortaleUfficiale}
+                    </span>
+                  </div>
+
+                  {/* Metadati */}
+                  <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-sm)", fontSize: "0.8rem", display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <div>
+                      <span style={{ color: "var(--color-text-secondary)" }}>Tempo medio di istruttoria: </span>
+                      <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{srv.tempoStimato}</span>
+                    </div>
+                    <div>
+                      <span style={{ color: "var(--color-text-secondary)" }}>Ufficio competente: </span>
+                      <span style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{srv.ufficioCompetente}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card-footer" style={{ padding: "var(--space-md) var(--space-lg)" }}>
+                  <button
+                    className="btn btn-primary w-full"
+                    onClick={() => onStartPercorso(srv.id)}
+                    style={{ gap: "6px" }}
+                  >
+                    Apri Guida al Servizio <EnterIcon aria-hidden="true" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,9 +1,16 @@
 import React from "react";
 import { Percorso, Scadenza, Documento } from "../types";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { 
+  InfoCircledIcon, 
+  GridIcon, 
+  ArchiveIcon, 
+  ChatBubbleIcon, 
+  ClockIcon 
+} from "@radix-ui/react-icons";
 import { SummaryWidgets } from "../components/dashboard/SummaryWidgets";
 import { ActiveGuidesList } from "../components/dashboard/ActiveGuidesList";
 import { RecommendedSteps } from "../components/dashboard/RecommendedSteps";
+import { TTSButton } from "../components/ui/TTSButton";
 
 export interface DashboardProps {
   percorsi: Percorso[];
@@ -15,7 +22,7 @@ export interface DashboardProps {
 
 /**
  * Pagina di Dashboard iniziale (Home) dell'applicazione.
- * Integra e coordina i sotto-componenti di visualizzazione.
+ * Offre spiegazioni sull'app, griglia di navigazione rapida e widget statistici.
  */
 export const Dashboard: React.FC<DashboardProps> = ({
   percorsi,
@@ -40,38 +47,137 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return d.getDate();
   };
 
+  // Costruisce la sintesi vocale per l'introduzione
+  const speechText = "Benvenuto nella tua Area Personale. Questo assistente digitale locale e offline ti aiuta a preparare i documenti e studiare i passaggi necessari per completare le pratiche dei servizi pubblici della Pubblica Amministrazione in modo semplice, autonomo e sicuro.";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
       {/* Intestazione Orientativa */}
-      <div className="page-header" style={{ marginBottom: 0 }}>
-        <div>
-          <h2 className="page-title" style={{ fontSize: "2rem" }}>Benvenuto nella tua Area Personale</h2>
+      <div className="page-header" style={{ marginBottom: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-md)" }}>
+        <div style={{ flex: 1, minWidth: "280px" }}>
+          <h2 className="page-title" style={{ fontSize: "2rem" }}>La tua Area Personale</h2>
           <p className="page-subtitle" style={{ fontSize: "1.1rem", marginTop: "6px" }}>
-            Questa applicazione ti aiuta a preparare i documenti e a completare in autonomia i percorsi per i servizi pubblici.
+            Un assistente locale privato per orientarti e preparare i documenti per i servizi pubblici.
           </p>
+        </div>
+        <div style={{ alignSelf: "center" }}>
+          <TTSButton 
+            text={speechText}
+            ariaLabel="Ascolta introduzione dell'area personale"
+          />
         </div>
       </div>
 
-
-
-      {/* Pulsante grande per trovare nuove guide */}
+      {/* Introduzione all'app ed educazione civica digitale */}
       <div 
-        className="card clickable" 
-        onClick={() => onNavigate("servizi")}
+        className="card w-full" 
         style={{ 
           padding: "var(--space-lg)", 
-          border: "2px solid var(--color-primary)", 
           backgroundColor: "var(--color-primary-light)",
-          cursor: "pointer"
+          borderLeft: "4px solid var(--color-primary)"
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)" }}>
-          <h3 style={{ fontSize: "1.3rem", fontWeight: 600, color: "var(--color-primary)" }}>
-            Hai bisogno di iniziare una nuova pratica?
-          </h3>
-          <p style={{ fontSize: "1.05rem", color: "var(--color-text-secondary)" }}>
-            Clicca qui per visualizzare l'elenco delle guide disponibili per la Carta d'Identità, il Cambio di Residenza e molto altro.
-          </p>
+        <div style={{ display: "flex", gap: "var(--space-md)", alignItems: "flex-start" }}>
+          <InfoCircledIcon style={{ width: "24px", height: "24px", color: "var(--color-primary)", flexShrink: 0, marginTop: "2px" }} />
+          <div>
+            <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "6px" }}>
+              Cos'è questa applicazione e come ti aiuta
+            </h3>
+            <p style={{ color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5" }}>
+              Questo programma è uno strumento protetto che risiede interamente offline sul tuo computer per garantirti la massima privacy. 
+              Ti consente di studiare i passaggi ufficiali prima di effettuare le domande, raccogliere in anticipo i certificati richiesti nel tuo archivio locale e verificare le scadenze importanti. 
+              Ricorda che per inoltrare ufficialmente qualsiasi pratica dovrai cliccare sui link ministeriali esterni indicati nelle singole guide.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Sezione Azioni Rapide */}
+      <div>
+        <h3 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "var(--space-sm)" }}>
+          Scorciatoie di navigazione rapida
+        </h3>
+        
+        <div className="summary-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+          <div 
+            className="card clickable card-interactive" 
+            onClick={() => onNavigate("servizi")}
+            style={{ padding: "var(--space-md)", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", gap: "var(--space-sm)", alignItems: "flex-start" }}>
+              <div style={{ padding: "10px", backgroundColor: "var(--color-primary-light)", borderRadius: "var(--radius-md)", display: "flex" }}>
+                <GridIcon style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: "1.05rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "4px" }}>
+                  Guide ai Servizi
+                </h4>
+                <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", lineHeight: "1.4" }}>
+                  Esplora l'elenco delle guide (es. SPID, Residenza, Passaporto) e avvia nuovi percorsi guidati.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="card clickable card-interactive" 
+            onClick={() => onNavigate("documenti")}
+            style={{ padding: "var(--space-md)", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", gap: "var(--space-sm)", alignItems: "flex-start" }}>
+              <div style={{ padding: "10px", backgroundColor: "var(--color-primary-light)", borderRadius: "var(--radius-md)", display: "flex" }}>
+                <ArchiveIcon style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: "1.05rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "4px" }}>
+                  Archivio Documenti
+                </h4>
+                <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", lineHeight: "1.4" }}>
+                  Carica e tieni pronti i tuoi documenti d'identità, moduli e ricevute TARI/IMU sul tuo dispositivo.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="card clickable card-interactive" 
+            onClick={() => onNavigate("assistente")}
+            style={{ padding: "var(--space-md)", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", gap: "var(--space-sm)", alignItems: "flex-start" }}>
+              <div style={{ padding: "10px", backgroundColor: "var(--color-primary-light)", borderRadius: "var(--radius-md)", display: "flex" }}>
+                <ChatBubbleIcon style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: "1.05rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "4px" }}>
+                  Assistente AI Locale
+                </h4>
+                <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", lineHeight: "1.4" }}>
+                  Scrivi in linguaggio naturale per capire quale pratica ti serve o quali requisiti devi soddisfare.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="card clickable card-interactive" 
+            onClick={() => onNavigate("scadenze")}
+            style={{ padding: "var(--space-md)", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", gap: "var(--space-sm)", alignItems: "flex-start" }}>
+              <div style={{ padding: "10px", backgroundColor: "var(--color-primary-light)", borderRadius: "var(--radius-md)", display: "flex" }}>
+                <ClockIcon style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: "1.05rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "4px" }}>
+                  Scadenze e Date
+                </h4>
+                <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", lineHeight: "1.4" }}>
+                  Controlla i promemoria impostati per ricordarti i passaggi amministrativi e i pagamenti.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -96,23 +202,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         formatMonth={formatMonth} 
         formatDay={formatDay} 
       />
-
-      {/* Box Spiegazione Filosofia Software */}
-      <div className="card w-full" style={{ borderLeft: "6px solid var(--color-primary)", backgroundColor: "var(--color-surface)" }}>
-        <div className="card-body" style={{ display: "flex", gap: "var(--space-md)", alignItems: "flex-start", padding: "var(--space-lg)" }}>
-          <InfoCircledIcon style={{ width: "32px", height: "32px", color: "var(--color-primary)", flexShrink: 0 }} />
-          <div>
-            <h4 style={{ fontSize: "1.2rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "8px" }}>
-              Informazioni utili sull'applicazione
-            </h4>
-            <p style={{ color: "var(--color-text-secondary)", fontSize: "1.05rem", lineHeight: "1.5" }}>
-              Questo programma è uno strumento privato che risiede interamente sul tuo dispositivo. 
-              Ti serve per raccogliere i documenti necessari e studiare i passaggi prima di fare la domanda. 
-              Ricorda che per inoltrare la domanda ufficiale dovrai sempre collegarti ai portali governativi esterni indicati nelle guide.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

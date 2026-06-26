@@ -56,8 +56,9 @@ export const AppShell: React.FC<AppShellProps> = ({
               height: "100%",
               width: "100%",
               display: "flex",
-              flexDirection: "column"
-            } : undefined}
+              flexDirection: "column",
+              minHeight: 0
+            } : { height: "100%", minHeight: 0 }}
           >
             {children}
           </main>

@@ -56,6 +56,16 @@ function App() {
   const [currentPage, setCurrentPage] = useState<string>("dashboard");
   const [selectedPercorsoId, setSelectedPercorsoId] = useState<string | null>(null);
 
+  // Inizializza preferenze accessibilità (zoom testo) al caricamento
+  useEffect(() => {
+    const isLargeText = localStorage.getItem("pref-large-text") === "true";
+    if (isLargeText) {
+      document.body.classList.add("accessibility-large-text");
+    } else {
+      document.body.classList.remove("accessibility-large-text");
+    }
+  }, []);
+
   // Listener globale per scorciatoie da tastiera
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

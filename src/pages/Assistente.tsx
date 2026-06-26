@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Messaggio } from "../types";
 import { Button } from "../components/ui/Button";
 import { ChatBubbleIcon, PaperPlaneIcon, TrashIcon } from "@radix-ui/react-icons";
+import { TTSButton } from "../components/ui/TTSButton";
 
 export interface AssistenteProps {
   messaggi: Messaggio[];
@@ -58,8 +59,15 @@ export const Assistente: React.FC<AssistenteProps> = ({
     setShowConfirmClear(false);
   };
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   };
 
   useEffect(() => {
@@ -107,6 +115,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
       display: "flex", 
       flexDirection: "column", 
       height: "100%",
+      minHeight: 0,
       maxWidth: "1000px",
       margin: "0 auto",
       width: "100%"
@@ -142,18 +151,20 @@ export const Assistente: React.FC<AssistenteProps> = ({
         </div>
       </div>
 
-      <div 
+       <div 
         className="card" 
         style={{ 
           flex: 1, 
           display: "flex", 
           flexDirection: "column", 
           overflow: "hidden", 
-          backgroundColor: "var(--color-surface)" 
+          backgroundColor: "var(--color-surface)",
+          minHeight: 0
         }}
       >
         <div 
           className="assistant-messages" 
+          ref={messagesContainerRef}
           style={{ 
             flex: 1, 
             overflowY: "auto",
@@ -177,38 +188,45 @@ export const Assistente: React.FC<AssistenteProps> = ({
                   maxWidth: "85%"
                 }}
               >
-                <button
-                  onClick={() => onDeleteMessage(msg.id)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--color-text-secondary)",
-                    cursor: "pointer",
-                    padding: "6px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "all var(--transition-fast)",
-                    opacity: 0.4,
-                    minHeight: "32px",
-                    minWidth: "32px"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = "1";
-                    e.currentTarget.style.color = "var(--color-danger)";
-                    e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = "0.4";
-                    e.currentTarget.style.color = "var(--color-text-secondary)";
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                  title="Elimina questo messaggio"
-                  aria-label="Elimina messaggio"
-                >
-                  <TrashIcon style={{ width: "16px", height: "16px" }} />
-                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <TTSButton 
+                    text={msg.testo} 
+                    variant="icon" 
+                    ariaLabel="Ascolta messaggio" 
+                  />
+                  <button
+                    onClick={() => onDeleteMessage(msg.id)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--color-text-secondary)",
+                      cursor: "pointer",
+                      padding: "6px",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all var(--transition-fast)",
+                      opacity: 0.4,
+                      minHeight: "32px",
+                      minWidth: "32px"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = "1";
+                      e.currentTarget.style.color = "var(--color-danger)";
+                      e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = "0.4";
+                      e.currentTarget.style.color = "var(--color-text-secondary)";
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    title="Elimina questo messaggio"
+                    aria-label="Elimina messaggio"
+                  >
+                    <TrashIcon style={{ width: "16px", height: "16px" }} />
+                  </button>
+                </div>
 
                 <div 
                   className={`message-bubble ${isUser ? "user" : "assistant"}`}

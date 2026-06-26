@@ -9,6 +9,7 @@ import {
   ArrowRightIcon,
   Cross2Icon
 } from "@radix-ui/react-icons";
+import { Alert } from "../components/ui/Alert";
 
 export interface DocumentiProps {
   documenti: Documento[];
@@ -63,11 +64,7 @@ export const Documenti: React.FC<DocumentiProps> = ({
       onDeleteDoc(docToDelete.id);
       const deletedName = docToDelete.nome;
       setDocToDelete(null);
-      setToastMessage(`Documento "${deletedName}" eliminato con successo.`);
-      const timer = setTimeout(() => {
-        setToastMessage(null);
-      }, 3000);
-      return () => clearTimeout(timer);
+      setToastMessage(`Documento "${deletedName}" eliminato con successo dall'archivio.`);
     }
   };
 
@@ -101,6 +98,7 @@ export const Documenti: React.FC<DocumentiProps> = ({
     
     const randomFile = defaultFiles[Math.floor(Math.random() * defaultFiles.length)];
     onUploadNewDoc(randomFile.nome, randomFile.tipo, randomFile.dim);
+    setToastMessage(`Documento "${randomFile.nome}" aggiunto con successo.`);
   };
 
   return (
@@ -112,6 +110,35 @@ export const Documenti: React.FC<DocumentiProps> = ({
           <p className="page-subtitle">Raccogli e tieni pronti i tuoi certificati, moduli e ricevute per allegarli facilmente sui portali della PA.</p>
         </div>
       </div>
+
+      {/* Alert di feedback locale in cima */}
+      {toastMessage && (
+        <Alert 
+          variant="success" 
+          title="Operazione completata" 
+          className="mb-md"
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+            <span>{toastMessage}</span>
+            <button 
+              onClick={() => setToastMessage(null)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "inherit",
+                cursor: "pointer",
+                padding: "4px",
+                marginLeft: "auto",
+                display: "inline-flex",
+                alignItems: "center"
+              }}
+              aria-label="Chiudi avviso"
+            >
+              <Cross2Icon />
+            </button>
+          </div>
+        </Alert>
+      )}
 
       {/* Caricamento d'esempio */}
       <div 
@@ -128,6 +155,7 @@ export const Documenti: React.FC<DocumentiProps> = ({
               ? `${(f.size / (1024 * 1024)).toFixed(1)} MB` 
               : `${Math.round(f.size / 1024)} KB`;
             onUploadNewDoc(f.name, ext, sizeStr);
+            setToastMessage(`Documento "${f.name}" aggiunto con successo.`);
           }
         }}
         onClick={simulateNewUpload}
@@ -407,27 +435,6 @@ export const Documenti: React.FC<DocumentiProps> = ({
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Toast di feedback eliminazione */}
-      {toastMessage && (
-        <div 
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            backgroundColor: "var(--color-dark-blue)",
-            color: "#ffffff",
-            padding: "12px 24px",
-            borderRadius: "var(--radius-md)",
-            boxShadow: "var(--shadow-md)",
-            zIndex: 1100,
-            fontSize: "0.95rem",
-            animation: "fadeIn 0.2s ease-out"
-          }}
-        >
-          {toastMessage}
         </div>
       )}
     </div>

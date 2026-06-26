@@ -1,6 +1,7 @@
 import React from "react";
 import { Percorso } from "../../types";
 import { CheckIcon } from "@radix-ui/react-icons";
+import { TTSButton } from "../ui/TTSButton";
 
 interface StepListProps {
   percorso: Percorso;
@@ -65,14 +66,22 @@ export const StepList: React.FC<StepListProps> = ({
               </div>
               
               <div style={{ flex: 1 }}>
-                <h4 style={{ 
-                   fontSize: "1.2rem", 
-                   fontWeight: 500, 
-                   color: isActive ? "var(--color-primary)" : "var(--color-text-primary)",
-                   textDecoration: isCompleted ? "line-through" : "none"
-                }}>
-                  {passoName}
-                </h4>
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--space-xs)" }}>
+                  <h4 style={{ 
+                     fontSize: "1.2rem", 
+                     fontWeight: 500, 
+                     color: isActive ? "var(--color-primary)" : "var(--color-text-primary)",
+                     textDecoration: isCompleted ? "line-through" : "none",
+                     margin: 0
+                  }}>
+                    {passoName}
+                  </h4>
+                  <TTSButton 
+                    text={`Passaggio ${index + 1}: ${passoName}. ${isActive ? percorso.passiDettagli[index] : ""}`}
+                    variant="icon"
+                    ariaLabel={`Ascolta passaggio ${index + 1}`}
+                  />
+                </div>
                 
                 {isActive && (
                   <div style={{ marginTop: "var(--space-sm)" }}>

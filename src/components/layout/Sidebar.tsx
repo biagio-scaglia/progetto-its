@@ -59,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       <div className="sidebar-footer" style={{ padding: "var(--space-md)", borderTop: "1px solid rgba(255, 255, 255, 0.1)", fontSize: "0.85rem", color: "rgba(255, 255, 255, 0.75)" }}>
-        <p style={{ fontWeight: 700, marginBottom: "6px", color: "#ffffff" }}>Tasti di scelta rapida:</p>
+        <p style={{ fontWeight: 600, marginBottom: "6px", color: "#ffffff" }}>Tasti di scelta rapida:</p>
         <p style={{ lineHeight: "1.3" }}>
           Premi <kbd style={{ background: "rgba(255, 255, 255, 0.2)", padding: "2px 4px", borderRadius: "3px", fontFamily: "monospace" }}>Alt</kbd> + numero (da 1 a 8) per cambiare pagina.
         </p>
