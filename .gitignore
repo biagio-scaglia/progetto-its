@@ -37,3 +37,7 @@ backend/.pytest_cache/
 backend/test.db
 *.db
 *.egg-info/
+
+# LLM Models
+/phi3.5-mini-ita/
+/qwen2-7b/
