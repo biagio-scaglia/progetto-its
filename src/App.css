@@ -1057,18 +1057,19 @@ button, input, select, textarea {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  background-color: #f8fafc;
 }
 
 .message-bubble {
-  max-width: 85%;
-  padding: var(--space-md);
+  max-width: 75%;
+  padding: 14px 20px;
   border-radius: var(--radius-lg);
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .message-bubble.assistant {
-  background-color: var(--color-background);
+  background-color: var(--color-primary-light);
   color: var(--color-text-primary);
   align-self: flex-start;
   border-bottom-left-radius: var(--radius-sm);
@@ -1080,12 +1081,14 @@ button, input, select, textarea {
   color: #ffffff;
   align-self: flex-end;
   border-bottom-right-radius: var(--radius-sm);
+  box-shadow: 0 2px 4px rgba(0, 85, 179, 0.15);
 }
 
 .assistant-input-area {
   padding: var(--space-md) var(--space-lg);
   border-top: 1px solid var(--color-border);
   background-color: var(--color-surface);
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.03);
 }
 
 .assistant-form {
@@ -1095,10 +1098,11 @@ button, input, select, textarea {
 
 .assistant-form-input {
   flex: 1;
-  padding: 10px 14px;
+  padding: 14px 18px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background-color: var(--color-background);
+  font-size: 0.95rem;
 }
 
 .assistant-suggestions {
@@ -1109,11 +1113,11 @@ button, input, select, textarea {
 }
 
 .suggestion-btn {
-  padding: 6px 12px;
+  padding: 8px 16px;
   background-color: var(--color-background);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
-  font-size: 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-primary);
   cursor: pointer;

@@ -22,6 +22,41 @@ export const Assistente: React.FC<AssistenteProps> = ({
 }) => {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
+
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const cancelClearBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (showConfirmClear) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      const focusCancel = () => {
+        cancelClearBtnRef.current?.focus();
+      };
+      const timer = setTimeout(focusCancel, 50);
+      return () => clearTimeout(timer);
+    } else {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+        previousFocusRef.current = null;
+      }
+    }
+  }, [showConfirmClear]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showConfirmClear) {
+        setShowConfirmClear(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showConfirmClear]);
+
+  const handleConfirmClear = () => {
+    onClearChat();
+    setShowConfirmClear(false);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -68,7 +103,14 @@ export const Assistente: React.FC<AssistenteProps> = ({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - var(--topbar-height) - 2 * var(--space-lg))" }}>
+    <div style={{ 
+      display: "flex", 
+      flexDirection: "column", 
+      height: "100%",
+      maxWidth: "1000px",
+      margin: "0 auto",
+      width: "100%"
+    }}>
       
       <div className="card-header" style={{ padding: "0 0 var(--space-md) 0", borderBottom: "1px solid var(--color-border)", marginBottom: "var(--space-md)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-sm)" }}>
         <div style={{ flex: 1, minWidth: "250px" }}>
@@ -80,7 +122,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
         <div>
           <Button 
             variant="secondary" 
-            onClick={onClearChat}
+            onClick={() => setShowConfirmClear(true)}
             style={{ 
               borderColor: "var(--color-danger)", 
               color: "var(--color-danger)", 
@@ -222,6 +264,80 @@ export const Assistente: React.FC<AssistenteProps> = ({
           </form>
         </div>
       </div>
+
+      {/* Modal di conferma cancellazione chat */}
+      {showConfirmClear && (
+        <div 
+          className="modal-overlay no-print"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 26, 77, 0.4)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            animation: "fadeIn 0.15s ease-out"
+          }}
+          onClick={() => setShowConfirmClear(false)}
+        >
+          <div 
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clear-dialog-title"
+            aria-describedby="clear-dialog-desc"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderRadius: "var(--radius-lg)",
+              border: "1px solid var(--color-border)",
+              boxShadow: "var(--shadow-lg)",
+              width: "90%",
+              maxWidth: "480px",
+              padding: "var(--space-lg)",
+              animation: "slideUp 0.2s ease-out",
+              position: "relative"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 
+              id="clear-dialog-title" 
+              style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-dark-blue)", margin: "0 0 var(--space-sm) 0" }}
+            >
+              Cancellazione cronologia chat
+            </h3>
+            
+            <p 
+              id="clear-dialog-desc" 
+              style={{ color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5", margin: "0 0 var(--space-lg) 0" }}
+            >
+              Sei sicuro di voler cancellare l'intera cronologia di questa conversazione? Questa azione rimuoverà tutti i messaggi scambiati e non potrai più recuperarli.
+            </p>
+            
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-sm)" }}>
+              <button 
+                ref={cancelClearBtnRef}
+                className="btn btn-secondary" 
+                onClick={() => setShowConfirmClear(false)}
+                style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem" }}
+              >
+                Annulla
+              </button>
+              <button 
+                className="btn btn-danger" 
+                onClick={handleConfirmClear}
+                style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem", backgroundColor: "var(--color-danger)" }}
+              >
+                Cancella cronologia
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

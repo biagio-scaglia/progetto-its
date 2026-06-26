@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ProfiloUtente as ProfiloUtenteType } from "../types";
 import { GeolocationData } from "../repositories/geolocationRepository";
 import { 
@@ -38,6 +38,35 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
   
   // Anti-spam guardrail temporale locale
   const [lastActionTime, setLastActionTime] = useState(0);
+
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const cancelResetBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (showConfirmReset) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      const focusCancel = () => {
+        cancelResetBtnRef.current?.focus();
+      };
+      const timer = setTimeout(focusCancel, 50);
+      return () => clearTimeout(timer);
+    } else {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+        previousFocusRef.current = null;
+      }
+    }
+  }, [showConfirmReset]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showConfirmReset) {
+        setShowConfirmReset(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showConfirmReset]);
 
   const handleToggleGeoloc = () => {
     const ora = Date.now();
@@ -253,35 +282,90 @@ export const ProfiloUtente: React.FC<ProfiloUtenteProps> = ({
             </p>
           </div>
           <div>
-            {!showConfirmReset ? (
-              <button 
-                className="btn btn-outline-danger" 
-                onClick={() => setShowConfirmReset(true)}
-                style={{ fontSize: "0.85rem", padding: "8px 16px" }}
-              >
-                <TrashIcon /> Elimina Profilo Locale
-              </button>
-            ) : (
-              <div className="flex gap-sm">
-                <button 
-                  className="btn btn-secondary" 
-                  onClick={() => setShowConfirmReset(false)}
-                  style={{ fontSize: "0.85rem", padding: "6px 12px" }}
-                >
-                  Annulla
-                </button>
-                <button 
-                  className="btn btn-primary" 
-                  onClick={handleResetProfile}
-                  style={{ backgroundColor: "var(--color-danger)", fontSize: "0.85rem", padding: "6px 12px" }}
-                >
-                  Conferma Eliminazione
-                </button>
-              </div>
-            )}
+            <button 
+              className="btn btn-outline-danger" 
+              onClick={() => setShowConfirmReset(true)}
+              style={{ fontSize: "0.85rem", padding: "8px 16px" }}
+            >
+              <TrashIcon /> Elimina Profilo Locale
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modal di conferma ripristino totale dell'applicazione */}
+      {showConfirmReset && (
+        <div 
+          className="modal-overlay no-print"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 26, 77, 0.4)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            animation: "fadeIn 0.15s ease-out"
+          }}
+          onClick={() => setShowConfirmReset(false)}
+        >
+          <div 
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-dialog-title"
+            aria-describedby="reset-dialog-desc"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderRadius: "var(--radius-lg)",
+              border: "1px solid var(--color-danger-border)",
+              boxShadow: "var(--shadow-lg)",
+              width: "90%",
+              maxWidth: "480px",
+              padding: "var(--space-lg)",
+              animation: "slideUp 0.2s ease-out",
+              position: "relative"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 
+              id="reset-dialog-title" 
+              style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-danger)", margin: "0 0 var(--space-sm) 0" }}
+            >
+              Conferma ripristino applicazione
+            </h3>
+            
+            <p 
+              id="reset-dialog-desc" 
+              style={{ color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5", margin: "0 0 var(--space-lg) 0" }}
+            >
+              Questa operazione eliminerà in modo permanente tutti i tuoi dati, compreso il tuo profilo utente locale, i documenti caricati e l'avanzamento di tutti i percorsi guida attivi. Questa azione è irreversibile.
+            </p>
+            
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-sm)" }}>
+              <button 
+                ref={cancelResetBtnRef}
+                className="btn btn-secondary" 
+                onClick={() => setShowConfirmReset(false)}
+                style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem" }}
+              >
+                Annulla
+              </button>
+              <button 
+                className="btn btn-danger" 
+                onClick={handleResetProfile}
+                style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem", backgroundColor: "var(--color-danger)" }}
+              >
+                Ripristina applicazione
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="profile-status-footer-bar">
         <span>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Percorso, Documento } from "../types";
 import { StatusBadge } from "../components/ui/StatusBadge";
 import { Button } from "../components/ui/Button";
-import { ExternalLinkIcon, DownloadIcon } from "@radix-ui/react-icons";
+import { ExternalLinkIcon, DownloadIcon, CheckCircledIcon } from "@radix-ui/react-icons";
 import { StepList } from "../components/guida/StepList";
 import { DocumentChecklist } from "../components/guida/DocumentChecklist";
 
@@ -75,9 +75,8 @@ export const PaginaGuida: React.FC<PaginaGuidaProps> = ({
               boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
               width: "90%",
               maxWidth: "520px",
-              padding: "var(--space-lg)",
+              padding: "var(--space-md)",
               position: "relative",
-              overflow: "hidden",
               animation: "slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
               display: "flex",
               flexDirection: "column",
@@ -99,30 +98,29 @@ export const PaginaGuida: React.FC<PaginaGuidaProps> = ({
             {/* Icona di successo pulsante */}
             <div 
               style={{
-                width: "72px",
-                height: "72px",
+                width: "56px",
+                height: "56px",
                 borderRadius: "50%",
                 backgroundColor: "var(--color-success-bg)",
                 border: "2px solid var(--color-success-border)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "2.2rem",
-                marginBottom: "var(--space-md)",
+                marginBottom: "var(--space-sm)",
                 boxShadow: "0 0 15px rgba(13, 110, 75, 0.2)",
                 animation: "pulse 2s infinite"
               }}
             >
-              🎉
+              <CheckCircledIcon style={{ width: "30px", height: "30px", color: "var(--color-success)" }} />
             </div>
 
             {/* Titolo e descrizione */}
-            <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "var(--color-success)", margin: "0 0 var(--space-xs) 0" }}>
+            <h3 style={{ fontSize: "1.35rem", fontWeight: 600, color: "var(--color-success)", margin: "0 0 var(--space-xs) 0" }}>
               Complimenti! Guida Completata!
             </h3>
-            <p style={{ color: "var(--color-text-secondary)", fontSize: "1.05rem", lineHeight: "1.6", margin: "0 0 var(--space-md) 0" }}>
+            <p style={{ color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5", margin: "0 0 var(--space-sm) 0" }}>
               Hai completato tutti i passaggi procedurali e verificato i requisiti per la guida:<br/>
-              <strong style={{ color: "var(--color-text-primary)", fontSize: "1.1rem" }}>{percorso.titolo}</strong>.
+              <strong style={{ color: "var(--color-text-primary)", fontSize: "1rem" }}>{percorso.titolo}</strong>.
             </p>
 
             <div style={{ width: "100%", height: "1px", backgroundColor: "var(--color-border)", margin: "var(--space-sm) 0" }} />
@@ -333,7 +331,7 @@ export const PaginaGuida: React.FC<PaginaGuidaProps> = ({
             }}
           >
             <h3 style={{ color: "var(--color-success)", fontSize: "1.3rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
-              🎉 Congratulazioni! Guida completata con successo
+              <CheckCircledIcon style={{ width: "24px", height: "24px" }} /> Congratulazioni! Guida completata con successo
             </h3>
             <p style={{ color: "var(--color-text-secondary)", fontSize: "1.05rem", margin: 0 }}>
               Hai completato tutti i passaggi necessari per questo percorso. Ora puoi procedere con la richiesta ufficiale sul portale istituzionale dell'ente se non l'hai già fatto.

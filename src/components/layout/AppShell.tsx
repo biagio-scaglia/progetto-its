@@ -45,8 +45,20 @@ export const AppShell: React.FC<AppShellProps> = ({
           userName={userName}
         />
         
-        <div className="app-content-wrapper">
-          <main className="app-content" id="main-content" tabIndex={-1}>
+        <div className="app-content-wrapper" style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+          <main 
+            className="app-content" 
+            id="main-content" 
+            tabIndex={-1}
+            style={currentPage === "assistente" ? { 
+              padding: "var(--space-md) var(--space-lg) var(--space-md) var(--space-lg)", 
+              overflow: "hidden", 
+              height: "100%",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column"
+            } : undefined}
+          >
             {children}
           </main>
           

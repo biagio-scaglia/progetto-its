@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Documento, StatoDocumento } from "../types";
 import { 
   MagnifyingGlassIcon, 
@@ -26,6 +26,50 @@ export const Documenti: React.FC<DocumentiProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatoDocumento | "tutti">("tutti");
   const [dragOver, setDragOver] = useState(false);
+  const [docToDelete, setDocToDelete] = useState<Documento | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const cancelBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (docToDelete) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      const focusCancel = () => {
+        cancelBtnRef.current?.focus();
+      };
+      const timer = setTimeout(focusCancel, 50);
+      return () => clearTimeout(timer);
+    } else {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+        previousFocusRef.current = null;
+      }
+    }
+  }, [docToDelete]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && docToDelete) {
+        setDocToDelete(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [docToDelete]);
+
+  const handleConfirmDelete = () => {
+    if (docToDelete) {
+      onDeleteDoc(docToDelete.id);
+      const deletedName = docToDelete.nome;
+      setDocToDelete(null);
+      setToastMessage(`Documento "${deletedName}" eliminato con successo.`);
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  };
 
   // Filter documents
   const filteredDocumenti = documenti.filter((doc) => {
@@ -279,7 +323,7 @@ export const Documenti: React.FC<DocumentiProps> = ({
                   <button 
                     className="btn-icon" 
                     title="Elimina documento"
-                    onClick={() => onDeleteDoc(doc.id)}
+                    onClick={() => setDocToDelete(doc)}
                     style={{ color: "var(--color-danger)" }}
                     aria-label={`Elimina ${doc.nome}`}
                   >
@@ -289,6 +333,101 @@ export const Documenti: React.FC<DocumentiProps> = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal di conferma eliminazione */}
+      {docToDelete && (
+        <div 
+          className="modal-overlay no-print"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 26, 77, 0.4)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            animation: "fadeIn 0.15s ease-out"
+          }}
+          onClick={() => setDocToDelete(null)}
+        >
+          <div 
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+            aria-describedby="delete-dialog-desc"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderRadius: "var(--radius-lg)",
+              border: "1px solid var(--color-border)",
+              boxShadow: "var(--shadow-lg)",
+              width: "90%",
+              maxWidth: "480px",
+              padding: "var(--space-lg)",
+              animation: "slideUp 0.2s ease-out",
+              position: "relative"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 
+              id="delete-dialog-title" 
+              style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-dark-blue)", margin: "0 0 var(--space-sm) 0" }}
+            >
+              Conferma eliminazione documento
+            </h3>
+            
+            <p 
+              id="delete-dialog-desc" 
+              style={{ color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5", margin: "0 0 var(--space-lg) 0" }}
+            >
+              Sei sicuro di voler eliminare definitivamente il documento <strong style={{ color: "var(--color-text-primary)" }}>{docToDelete.nome}</strong> dall'archivio locale? Questa azione non può essere annullata.
+            </p>
+            
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-sm)" }}>
+              <button 
+                ref={cancelBtnRef}
+                className="btn btn-secondary" 
+                onClick={() => setDocToDelete(null)}
+                style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem" }}
+              >
+                Annulla
+              </button>
+              <button 
+                className="btn btn-danger" 
+                onClick={handleConfirmDelete}
+                style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem", backgroundColor: "var(--color-danger)" }}
+              >
+                Elimina documento
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast di feedback eliminazione */}
+      {toastMessage && (
+        <div 
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "24px",
+            backgroundColor: "var(--color-dark-blue)",
+            color: "#ffffff",
+            padding: "12px 24px",
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow-md)",
+            zIndex: 1100,
+            fontSize: "0.95rem",
+            animation: "fadeIn 0.2s ease-out"
+          }}
+        >
+          {toastMessage}
         </div>
       )}
     </div>
