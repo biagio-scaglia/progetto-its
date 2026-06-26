@@ -9,6 +9,7 @@ import {
   GearIcon,
   PersonIcon
 } from "@radix-ui/react-icons";
+import { SDITLogo } from "../ui/SDITLogo";
 
 export interface SidebarProps {
   currentPage: string;
@@ -19,7 +20,8 @@ export interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
-  onNavigate
+  onNavigate,
+  isCollapsed
 }) => {
   const menuItems = [
     { id: "dashboard", label: "Home", icon: <HomeIcon className="sidebar-nav-item-icon" /> },
@@ -33,12 +35,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="app-sidebar" aria-label="Navigazione principale">
-      <div className="sidebar-header">
-        <div className="sidebar-logo">
-          <div className="sidebar-logo-icon" aria-hidden="true">IT</div>
-          <span style={{ marginLeft: "4px" }}>Servizi Digitali</span>
-        </div>
+    <aside className={`app-sidebar ${isCollapsed ? "collapsed" : ""}`} aria-label="Navigazione principale">
+      <div className="sidebar-header" style={{ padding: isCollapsed ? "0 var(--space-sm)" : "0 var(--space-lg)" }}>
+        <SDITLogo variant={isCollapsed ? "compact" : "full"} theme="dark" />
       </div>
       
       <nav className="sidebar-nav">
@@ -50,23 +49,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onNavigate(item.id)}
               className={`sidebar-nav-item ${isActive ? "active" : ""}`}
               aria-current={isActive ? "page" : undefined}
+              title={isCollapsed ? item.label : undefined}
             >
               {item.icon}
-              <span>{item.label}</span>
+              {!isCollapsed && <span>{item.label}</span>}
             </button>
           );
         })}
       </nav>
 
-      <div className="sidebar-footer" style={{ padding: "var(--space-md)", borderTop: "1px solid rgba(255, 255, 255, 0.1)", fontSize: "0.85rem", color: "rgba(255, 255, 255, 0.75)" }}>
-        <p style={{ fontWeight: 600, marginBottom: "6px", color: "#ffffff" }}>Tasti di scelta rapida:</p>
-        <p style={{ lineHeight: "1.3" }}>
-          Premi <kbd style={{ background: "rgba(255, 255, 255, 0.2)", padding: "2px 4px", borderRadius: "3px", fontFamily: "monospace" }}>Alt</kbd> + numero (da 1 a 8) per cambiare pagina.
-        </p>
-        <p style={{ marginTop: "4px", lineHeight: "1.3" }}>
-          Premi <kbd style={{ background: "rgba(255, 255, 255, 0.2)", padding: "2px 4px", borderRadius: "3px", fontFamily: "monospace" }}>Esc</kbd> per tornare indietro.
-        </p>
-      </div>
+      {!isCollapsed && (
+        <div className="sidebar-footer" style={{ padding: "var(--space-md)", borderTop: "1px solid rgba(255, 255, 255, 0.1)", fontSize: "0.85rem", color: "rgba(255, 255, 255, 0.75)" }}>
+          <p style={{ fontWeight: 600, marginBottom: "6px", color: "#ffffff" }}>Tasti di scelta rapida:</p>
+          <p style={{ lineHeight: "1.3" }}>
+            Premi <kbd style={{ background: "rgba(255, 255, 255, 0.2)", padding: "2px 4px", borderRadius: "3px", fontFamily: "monospace" }}>Alt</kbd> + numero (da 1 a 8) per cambiare pagina.
+          </p>
+          <p style={{ marginTop: "4px", lineHeight: "1.3" }}>
+            Premi <kbd style={{ background: "rgba(255, 255, 255, 0.2)", padding: "2px 4px", borderRadius: "3px", fontFamily: "monospace" }}>Esc</kbd> per tornare indietro.
+          </p>
+        </div>
+      )}
     </aside>
   );
 };

@@ -3,6 +3,8 @@ import { ProfiloUtente } from "../types";
 import { ProfileRepository, contieneEmoji } from "../repositories/profileRepository";
 import { InfoCircledIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon } from "@radix-ui/react-icons";
 import { CITIES_DB } from "../services/geolocationService";
+import { BRAND } from "../config/branding";
+import { AssistantMascot } from "../components/ui/AssistantMascot";
 
 // Estrazione ed ordinamento dei suggerimenti geografici da CITIES_DB
 const LISTA_COMUNI = CITIES_DB.map(c => c.nome).sort((a, b) => a.localeCompare(b, "it"));
@@ -152,15 +154,22 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         <div className="onboarding-card">
           {/* STEP 1: PRESENTAZIONE */}
           {step === 1 && (
-            <div className="onboarding-step-content">
-              <h2 className="onboarding-title">Benvenuto nell'Area Personale di Guida ai Servizi</h2>
+            <div className="onboarding-step-content" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ marginBottom: "var(--space-md)", display: "flex", justifyContent: "center" }}>
+                <AssistantMascot size="lg" />
+              </div>
               
-              <div className="onboarding-body">
+              <h2 className="onboarding-title" style={{ textAlign: "center", marginBottom: "4px" }}>Benvenuto su {BRAND.name}</h2>
+              <p style={{ fontWeight: 600, color: "var(--color-primary)", fontSize: "1.1rem", marginBottom: "var(--space-md)", textAlign: "center" }}>
+                {BRAND.fullName}
+              </p>
+              
+              <div className="onboarding-body" style={{ width: "100%" }}>
                 <p>
                   Questo software ti aiuta a orientarti tra i passaggi procedurali, i documenti necessari e i contatti per completare i servizi demografici e amministrativi italiani.
                 </p>
                 <p>
-                  L'applicazione si avvia come uno spazio di lavoro pulito e privo di dati pre-caricati. Sarai tu a selezionare ed attivare le guide che ti interessano direttamente dal nostro catalogo servizi, ad aggiungere le tue scadenze personali e ad archiviare i tuoi documenti in totale privacy e sicurezza sul tuo dispositivo.
+                  L'applicazione si avvia come uno spazio di lavoro pulito e privo di dati pre-caricati. Sarai tu a selezionare ed attivare le guide che ti interessano direttamente dal catalogo servizi di {BRAND.name}, ad aggiungere le tue scadenze personali e ad archiviare i tuoi documenti in totale privacy e sicurezza sul tuo dispositivo.
                 </p>
                 
                 <div className="notice-box-onboarding">

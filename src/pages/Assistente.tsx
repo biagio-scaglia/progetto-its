@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Messaggio } from "../types";
 import { Button } from "../components/ui/Button";
-import { ChatBubbleIcon, PaperPlaneIcon, TrashIcon } from "@radix-ui/react-icons";
+import { PaperPlaneIcon, TrashIcon } from "@radix-ui/react-icons";
 import { TTSButton } from "../components/ui/TTSButton";
+import { BRAND } from "../config/branding";
+import { AssistantMascot } from "../components/ui/AssistantMascot";
 
 export interface AssistenteProps {
   messaggi: Messaggio[];
@@ -124,7 +126,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
       <div className="card-header" style={{ padding: "0 0 var(--space-md) 0", borderBottom: "1px solid var(--color-border)", marginBottom: "var(--space-md)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-sm)" }}>
         <div style={{ flex: 1, minWidth: "250px" }}>
           <h2 className="page-title" style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "var(--space-sm)", marginBottom: "4px" }}>
-            <ChatBubbleIcon style={{ color: "var(--color-primary)" }} /> Assistente per l'Orientamento
+            <AssistantMascot size="md" /> {BRAND.assistantName}
           </h2>
           <p className="page-subtitle" style={{ margin: 0 }}>Digita le tue domande per capire quale servizio attivare, quali scadenze rispettare o come raccogliere i documenti necessari.</p>
         </div>
@@ -184,49 +186,57 @@ export const Assistente: React.FC<AssistenteProps> = ({
                   alignItems: "center", 
                   gap: "var(--space-sm)", 
                   alignSelf: isUser ? "flex-end" : "flex-start",
-                  flexDirection: isUser ? "row" : "row-reverse",
+                  flexDirection: "row",
                   maxWidth: "85%"
                 }}
               >
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                  <TTSButton 
-                    text={msg.testo} 
-                    variant="icon" 
-                    ariaLabel="Ascolta messaggio" 
-                  />
-                  <button
-                    onClick={() => onDeleteMessage(msg.id)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "var(--color-text-secondary)",
-                      cursor: "pointer",
-                      padding: "6px",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all var(--transition-fast)",
-                      opacity: 0.4,
-                      minHeight: "32px",
-                      minWidth: "32px"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = "1";
-                      e.currentTarget.style.color = "var(--color-danger)";
-                      e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = "0.4";
-                      e.currentTarget.style.color = "var(--color-text-secondary)";
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }}
-                    title="Elimina questo messaggio"
-                    aria-label="Elimina messaggio"
-                  >
-                    <TrashIcon style={{ width: "16px", height: "16px" }} />
-                  </button>
-                </div>
+                {!isUser && (
+                  <div style={{ alignSelf: "flex-end", marginBottom: "4px" }}>
+                    <AssistantMascot size="sm" />
+                  </div>
+                )}
+
+                {isUser && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <TTSButton 
+                      text={msg.testo} 
+                      variant="icon" 
+                      ariaLabel="Ascolta messaggio" 
+                    />
+                    <button
+                      onClick={() => onDeleteMessage(msg.id)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--color-text-secondary)",
+                        cursor: "pointer",
+                        padding: "6px",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "all var(--transition-fast)",
+                        opacity: 0.4,
+                        minHeight: "32px",
+                        minWidth: "32px"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = "1";
+                        e.currentTarget.style.color = "var(--color-danger)";
+                        e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = "0.4";
+                        e.currentTarget.style.color = "var(--color-text-secondary)";
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                      title="Elimina questo messaggio"
+                      aria-label="Elimina messaggio"
+                    >
+                      <TrashIcon style={{ width: "16px", height: "16px" }} />
+                    </button>
+                  </div>
+                )}
 
                 <div 
                   className={`message-bubble ${isUser ? "user" : "assistant"}`}
@@ -242,10 +252,52 @@ export const Assistente: React.FC<AssistenteProps> = ({
                   }}
                 >
                   <div style={{ fontSize: "0.8rem", fontWeight: 600, color: isUser ? "rgba(255,255,255,0.8)" : "var(--color-text-secondary)", marginBottom: "2px" }}>
-                    {isUser ? "Tu" : "Guida Digitale"} • {msg.timestamp}
+                    {isUser ? "Tu" : BRAND.assistantName} • {msg.timestamp}
                   </div>
                   {renderMessageText(msg)}
                 </div>
+
+                {!isUser && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <TTSButton 
+                      text={msg.testo} 
+                      variant="icon" 
+                      ariaLabel="Ascolta messaggio" 
+                    />
+                    <button
+                      onClick={() => onDeleteMessage(msg.id)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--color-text-secondary)",
+                        cursor: "pointer",
+                        padding: "6px",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "all var(--transition-fast)",
+                        opacity: 0.4,
+                        minHeight: "32px",
+                        minWidth: "32px"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = "1";
+                        e.currentTarget.style.color = "var(--color-danger)";
+                        e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = "0.4";
+                        e.currentTarget.style.color = "var(--color-text-secondary)";
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                      title="Elimina questo messaggio"
+                      aria-label="Elimina messaggio"
+                    >
+                      <TrashIcon style={{ width: "16px", height: "16px" }} />
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

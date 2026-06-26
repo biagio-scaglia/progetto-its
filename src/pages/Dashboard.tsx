@@ -4,13 +4,14 @@ import {
   InfoCircledIcon, 
   GridIcon, 
   ArchiveIcon, 
-  ChatBubbleIcon, 
   ClockIcon 
 } from "@radix-ui/react-icons";
 import { SummaryWidgets } from "../components/dashboard/SummaryWidgets";
 import { ActiveGuidesList } from "../components/dashboard/ActiveGuidesList";
 import { RecommendedSteps } from "../components/dashboard/RecommendedSteps";
 import { TTSButton } from "../components/ui/TTSButton";
+import { BRAND } from "../config/branding";
+import { AssistantMascot } from "../components/ui/AssistantMascot";
 
 export interface DashboardProps {
   percorsi: Percorso[];
@@ -48,22 +49,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   // Costruisce la sintesi vocale per l'introduzione
-  const speechText = "Benvenuto nella tua Area Personale. Questo assistente digitale locale e offline ti aiuta a preparare i documenti e studiare i passaggi necessari per completare le pratiche dei servizi pubblici della Pubblica Amministrazione in modo semplice, autonomo e sicuro.";
+  const speechText = `Benvenuto su ${BRAND.name}, ${BRAND.fullName}. Questo sistema di orientamento locale e offline ti aiuta a preparare i documenti e studiare i passaggi necessari per completare le pratiche dei servizi pubblici in modo semplice, autonomo e sicuro.`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
       {/* Intestazione Orientativa */}
       <div className="page-header" style={{ marginBottom: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-md)" }}>
         <div style={{ flex: 1, minWidth: "280px" }}>
-          <h2 className="page-title" style={{ fontSize: "2rem" }}>La tua Area Personale</h2>
+          <h2 className="page-title" style={{ fontSize: "2rem" }}>Benvenuto su {BRAND.name}</h2>
           <p className="page-subtitle" style={{ fontSize: "1.1rem", marginTop: "6px" }}>
-            Un assistente locale privato per orientarti e preparare i documenti per i servizi pubblici.
+            {BRAND.tagline}
           </p>
         </div>
         <div style={{ alignSelf: "center" }}>
           <TTSButton 
             text={speechText}
-            ariaLabel="Ascolta introduzione dell'area personale"
+            ariaLabel="Ascolta introduzione di SDIT"
           />
         </div>
       </div>
@@ -145,12 +146,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             style={{ padding: "var(--space-md)", cursor: "pointer" }}
           >
             <div style={{ display: "flex", gap: "var(--space-sm)", alignItems: "flex-start" }}>
-              <div style={{ padding: "10px", backgroundColor: "var(--color-primary-light)", borderRadius: "var(--radius-md)", display: "flex" }}>
-                <ChatBubbleIcon style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--color-primary-light)", borderRadius: "var(--radius-md)", width: "40px", height: "40px" }}>
+                <AssistantMascot size="sm" />
               </div>
               <div>
                 <h4 style={{ fontSize: "1.05rem", fontWeight: 600, color: "var(--color-dark-blue)", marginBottom: "4px" }}>
-                  Assistente AI Locale
+                  {BRAND.assistantName}
                 </h4>
                 <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", lineHeight: "1.4" }}>
                   Scrivi in linguaggio naturale per capire quale pratica ti serve o quali requisiti devi soddisfare.

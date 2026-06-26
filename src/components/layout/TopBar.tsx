@@ -1,4 +1,5 @@
 import React from "react";
+import { BRAND } from "../../config/branding";
 
 export interface TopBarProps {
   title: string;
@@ -10,7 +11,7 @@ export interface TopBarProps {
 
 export const TopBar: React.FC<TopBarProps> = ({
   title,
-  subtitle = "Repubblica Italiana",
+  subtitle = BRAND.tagline,
   onOpenAssistant,
   showAssistantToggle = true,
   userName
@@ -44,9 +45,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             className="btn btn-secondary" 
             onClick={onOpenAssistant}
             style={{ padding: "6px 12px", fontSize: "0.85rem" }}
-            aria-label="Apri Assistente Digitale"
+            aria-label={`Apri ${BRAND.assistantName}`}
           >
-            Chiedi all'Assistente
+            Chiedi a {BRAND.assistantName}
           </button>
         )}
 

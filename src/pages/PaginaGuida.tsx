@@ -7,6 +7,7 @@ import { StepList } from "../components/guida/StepList";
 import { DocumentChecklist } from "../components/guida/DocumentChecklist";
 import { TTSButton } from "../components/ui/TTSButton";
 import { getPercorsoVisual } from "../config/serviceVisuals";
+import { BRAND } from "../config/branding";
 
 export interface PaginaGuidaProps {
   percorso: Percorso;
@@ -479,7 +480,7 @@ export const PaginaGuida: React.FC<PaginaGuidaProps> = ({
         )}
         
         <div className="print-footer">
-          Documento generato dall'applicazione "Servizi Digitali" il {new Date().toLocaleDateString("it-IT")}. Le procedure ufficiali possono subire variazioni da parte degli enti competenti.
+          Documento generato dall'applicazione "${BRAND.name} — ${BRAND.fullName}" il {new Date().toLocaleDateString("it-IT")}. Le procedure ufficiali possono subire variazioni da parte degli enti competenti.
         </div>
       </div>
     </div>

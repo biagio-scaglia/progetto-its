@@ -1,7 +1,7 @@
 @echo off
-title Avvio Servizi Digitali Desktop
+title Avvio SDIT Desktop
 echo =================================================================
-echo   Avvio dell'Area Personale - Servizi Digitali Italiani (Locale)
+echo   Avvio di SDIT - Servizi Digitali Italiani (Locale)
 echo =================================================================
 echo.
 

@@ -1,6 +1,6 @@
-# Software di Guida ai Servizi Digitali Italiani (Local-First)
+# SDIT — Servizi Digitali Italiani (Local-First)
 
-Questa applicazione desktop è uno strumento privato di guida e orientamento per i cittadini italiani nei rapporti con la Pubblica Amministrazione (es. INPS, ANPR, portali comunali). L'obiettivo principale è aiutare l'utente a comprendere i passaggi, preparare i requisiti documentali corretti e accedere in sicurezza ai link ufficiali per completare le pratiche burocratiche.
+Questa applicazione desktop (SDIT) è uno strumento privato di guida e orientamento per i cittadini italiani nei rapporti con la Pubblica Amministrazione (es. INPS, ANPR, portali comunali). L'obiettivo principale è aiutare l'utente a comprendere i passaggi, preparare i requisiti documentali corretti e accedere in sicurezza ai link ufficiali per completare le pratiche burocratiche.
 
 ---
 

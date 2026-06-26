@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Alert } from "../components/ui/Alert";
+import { BRAND } from "../config/branding";
 import { ProfiloUtente as ProfiloUtenteType } from "../types";
 import { contieneEmoji } from "../repositories/profileRepository";
 import { GeolocationData } from "../repositories/geolocationRepository";
@@ -127,7 +128,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">Impostazioni dell'Area Personale</h2>
+          <h2 className="page-title">Impostazioni di {BRAND.name}</h2>
           <p className="page-subtitle">Configura le preferenze dell'applicazione di guida locale e gestisci i tuoi consensi sulla privacy.</p>
         </div>
       </div>

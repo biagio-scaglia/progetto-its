@@ -21,6 +21,9 @@ import { Onboarding } from "./pages/Onboarding";
 // Import hooks
 import { useAppState } from "./hooks/useAppState";
 
+// Import branding config
+import { BRAND } from "./config/branding";
+
 /**
  * Componente principale dell'applicazione (Root Router & Layout).
  * Delega lo stato globale e le azioni a useAppState.
@@ -136,7 +139,7 @@ function App() {
     switch (currentPage) {
       case "dashboard": {
         const localita = profilo?.comune ? (profilo.provincia ? `${profilo.comune} (${profilo.provincia})` : profilo.comune) : "Italia";
-        return { title: "Software di Guida ai Servizi", subtitle: `Orientamento per il cittadino • ${localita}` };
+        return { title: BRAND.fullName, subtitle: `Orientamento per il cittadino • ${localita}` };
       }
       case "pratiche":
         return { title: "I tuoi Percorsi di Guida", subtitle: "Stato dei percorsi di compilazione aperti" };
@@ -149,7 +152,7 @@ function App() {
       case "documenti":
         return { title: "Archivio Documenti", subtitle: "Raccogli i tuoi documenti utili in locale" };
       case "assistente":
-        return { title: "Assistente per l'Orientamento", subtitle: "Chiedi aiuto su documenti e passaggi burocratici" };
+        return { title: BRAND.assistantName, subtitle: "Chiedi aiuto su documenti e passaggi burocratici" };
       case "scadenze":
         return { title: "Date e Scadenze Utili", subtitle: "Promemoria per procedimenti ed adempimenti" };
       case "impostazioni":
@@ -157,7 +160,7 @@ function App() {
       case "profilo":
         return { title: "Profilo Utente Locale", subtitle: "Informazioni utente e consensi memorizzati nel dispositivo" };
       default:
-        return { title: "Guida Servizi", subtitle: "Repubblica Italiana" };
+        return { title: BRAND.name, subtitle: BRAND.tagline };
     }
   };
 

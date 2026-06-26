@@ -580,7 +580,7 @@ export const ASSISTENTE_INITIAL_MESSAGGI: Messaggio[] = [
   {
     id: "msg-1",
     mittente: "assistente",
-    testo: "Gentile cittadino, benvenuto nell'Assistente di Guida ai Servizi Pubblici.\nSono qui per orientarti tra i passaggi burocratici, i documenti necessari e i portali di riferimento (es. INPS, ANPR o portali comunali).\n\nCome posso esserti utile?",
+    testo: "Gentile cittadino, benvenuto su SDIT (Servizi Digitali Italiani).\nSono la tua Guida SDIT e sono qui per aiutarti a orientarti tra i passaggi burocratici, i documenti necessari e i portali di riferimento (es. INPS, ANPR o portali comunali).\n\nCome posso esserti utile?",
     timestamp: "12:00",
     suggerimenti: [
       "Come posso iniziare una guida?",
