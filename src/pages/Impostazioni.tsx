@@ -5,7 +5,8 @@ import { BRAND } from "../config/branding";
 import { ProfiloUtente as ProfiloUtenteType } from "../types";
 import { contieneEmoji } from "../repositories/profileRepository";
 import { GeolocationData } from "../repositories/geolocationRepository";
-import { PersonIcon, AccessibilityIcon, LockClosedIcon, InfoCircledIcon } from "@radix-ui/react-icons";
+import { PersonIcon, AccessibilityIcon, LockClosedIcon, InfoCircledIcon, GearIcon } from "@radix-ui/react-icons";
+import { SettingsService, AISettings } from "../services/settingsService";
 
 interface ImpostazioniProps {
   profilo: ProfiloUtenteType;
@@ -35,6 +36,14 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
   const [autoSave, setAutoSave] = useState(true);
   const [largeText, setLargeText] = useState(() => localStorage.getItem("pref-large-text") === "true");
   const [enableTTS, setEnableTTS] = useState(() => localStorage.getItem("pref-enable-tts") !== "false");
+
+  // Local AI Settings States
+  const [aiSettings, setAiSettings] = useState<AISettings>(() => SettingsService.getSettings());
+
+  const handleAISettingChange = (key: keyof AISettings, value: any) => {
+    const updated = SettingsService.saveSettings({ [key]: value });
+    setAiSettings(updated);
+  };
 
   const handleLargeTextToggle = (checked: boolean) => {
     setLargeText(checked);
@@ -319,6 +328,113 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                 />
               </div>
 
+            </div>
+          </div>
+
+          {/* Configurazione Modelli AI Locali */}
+          <div className="card w-full mt-lg" style={{ marginTop: "var(--space-lg)" }}>
+            <div className="card-header">
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <GearIcon /> Configurazione Modelli AI Locali (Ollama)
+              </h3>
+            </div>
+            
+            <div className="card-body" style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", padding: "var(--space-md)" }}>
+              <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-sm)" }}>
+                Configura i parametri del server Ollama locale e i modelli installati sul tuo computer.
+              </p>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)" }}>
+                <div className="form-group" style={{ gridColumn: "span 2" }}>
+                  <label className="form-label" htmlFor="ai-endpoint">Endpoint API Ollama</label>
+                  <input
+                    id="ai-endpoint"
+                    type="text"
+                    className="form-input"
+                    value={aiSettings.ollamaEndpoint}
+                    onChange={e => handleAISettingChange("ollamaEndpoint", e.target.value)}
+                    placeholder="http://localhost:11434"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" htmlFor="ai-phi-model">Nome Modello Phi (Veloce)</label>
+                  <input
+                    id="ai-phi-model"
+                    type="text"
+                    className="form-input"
+                    value={aiSettings.phiModel}
+                    onChange={e => handleAISettingChange("phiModel", e.target.value)}
+                    placeholder="phi3.5-mini-ita"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" htmlFor="ai-qwen-model">Nome Modello Qwen (Avanzato)</label>
+                  <input
+                    id="ai-qwen-model"
+                    type="text"
+                    className="form-input"
+                    value={aiSettings.qwenModel}
+                    onChange={e => handleAISettingChange("qwenModel", e.target.value)}
+                    placeholder="qwen2-7b"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" htmlFor="ai-phi-timeout">Timeout Phi (millisecondi)</label>
+                  <input
+                    id="ai-phi-timeout"
+                    type="number"
+                    className="form-input"
+                    value={aiSettings.phiTimeout}
+                    onChange={e => handleAISettingChange("phiTimeout", parseInt(e.target.value) || 15000)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" htmlFor="ai-qwen-timeout">Timeout Qwen (millisecondi)</label>
+                  <input
+                    id="ai-qwen-timeout"
+                    type="number"
+                    className="form-input"
+                    value={aiSettings.qwenTimeout}
+                    onChange={e => handleAISettingChange("qwenTimeout", parseInt(e.target.value) || 30000)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: "var(--space-md)", marginTop: "var(--space-md)" }}>
+                <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                  <div>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Usa Qwen per query complesse</strong>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                      Instrada automaticamente le richieste complesse o multi-step su Qwen.
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={aiSettings.useQwenComplex}
+                    onChange={e => handleAISettingChange("useQwenComplex", e.target.checked)}
+                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  />
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Usa Qwen per query rewriting RAG</strong>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                      Utilizza Qwen per ottimizzare le ricerche nel database RAG locale prima della risposta.
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={aiSettings.useQwenRewriting}
+                    onChange={e => handleAISettingChange("useQwenRewriting", e.target.checked)}
+                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>

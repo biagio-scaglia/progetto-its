@@ -2577,5 +2577,21 @@ body.accessibility-large-text .topbar-subtitle {
   font-size: 0.95rem !important;
 }
 
+/* Local AI Loading typing indicator animation */
+.dot-loading {
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0);
+    opacity: 0.3;
+  } 
+  40% { 
+    transform: scale(1.0);
+    opacity: 1;
+  }
+}
+
 
 

@@ -6,6 +6,8 @@ import { TTSButton } from "../components/ui/TTSButton";
 import { BRAND } from "../config/branding";
 import { AssistantMascot } from "../components/ui/AssistantMascot";
 
+import { getFriendlyRoutingReason } from "../utils/routingReason";
+
 export interface AssistenteProps {
   messaggi: Messaggio[];
   onSendMessage: (testo: string) => void;
@@ -13,6 +15,9 @@ export interface AssistenteProps {
   onSelectPercorso: (id: string) => void;
   onClearChat: () => void;
   onDeleteMessage: (id: string) => void;
+  modelMode?: "auto" | "phi" | "qwen";
+  onUpdateModelMode?: (mode: "auto" | "phi" | "qwen") => void;
+  isAiLoading?: boolean;
 }
 
 export const Assistente: React.FC<AssistenteProps> = ({
@@ -21,7 +26,10 @@ export const Assistente: React.FC<AssistenteProps> = ({
   onNavigate,
   onSelectPercorso,
   onClearChat,
-  onDeleteMessage
+  onDeleteMessage,
+  modelMode = "auto",
+  onUpdateModelMode,
+  isAiLoading = false
 }) => {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -130,7 +138,33 @@ export const Assistente: React.FC<AssistenteProps> = ({
           </h2>
           <p className="page-subtitle" style={{ margin: 0 }}>Digita le tue domande per capire quale servizio attivare, quali scadenze rispettare o come raccogliere i documenti necessari.</p>
         </div>
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-xs)" }}>
+            <label htmlFor="model-select" style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-secondary)", whiteSpace: "nowrap" }}>
+              Motore AI:
+            </label>
+            <select
+              id="model-select"
+              value={modelMode}
+              onChange={(e) => onUpdateModelMode?.(e.target.value as any)}
+              className="form-input"
+              style={{ 
+                padding: "6px 12px", 
+                fontSize: "0.85rem", 
+                width: "auto", 
+                minHeight: "36px",
+                borderColor: "var(--color-border)",
+                borderRadius: "var(--radius-sm)",
+                backgroundColor: "var(--color-surface)",
+                cursor: "pointer"
+              }}
+            >
+              <option value="auto">Automatico (Consigliato)</option>
+              <option value="phi">Solo Phi (Veloce)</option>
+              <option value="qwen">Solo Qwen (Avanzato)</option>
+            </select>
+          </div>
+
           <Button 
             variant="secondary" 
             onClick={() => setShowConfirmClear(true)}
@@ -255,6 +289,63 @@ export const Assistente: React.FC<AssistenteProps> = ({
                     {isUser ? "Tu" : BRAND.assistantName} • {msg.timestamp}
                   </div>
                   {renderMessageText(msg)}
+
+                  {/* AI Observation Metadata Badges */}
+                  {!isUser && msg.modelloUsato && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px", alignItems: "center" }}>
+                      <span 
+                        style={{
+                          fontSize: "0.7rem",
+                          fontWeight: 600,
+                          padding: "2px 6px",
+                          borderRadius: "var(--radius-sm)",
+                          backgroundColor: msg.modelloUsato === "phi" ? "var(--color-primary-light)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.1)" : "var(--color-danger-bg)",
+                          color: msg.modelloUsato === "phi" ? "var(--color-primary)" : msg.modelloUsato === "qwen" ? "rgb(124, 58, 237)" : "var(--color-danger)",
+                          border: `1px solid ${msg.modelloUsato === "phi" ? "rgba(0, 85, 179, 0.15)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.15)" : "var(--color-danger-border)"}`
+                        }}
+                      >
+                        Generato con {msg.modelloUsato === "phi" ? "Phi (Veloce)" : msg.modelloUsato === "qwen" ? "Qwen (Avanzato)" : "Errore"}
+                      </span>
+
+                      {msg.ragAttivo && (
+                        <span 
+                          style={{
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            padding: "2px 6px",
+                            borderRadius: "var(--radius-sm)",
+                            backgroundColor: "var(--color-success-bg)",
+                            color: "var(--color-success)",
+                            border: "1px solid var(--color-success-border)"
+                          }}
+                        >
+                          RAG locale attivo
+                        </span>
+                      )}
+
+                      {msg.motivoRouting && (
+                        <span 
+                          title={`${getFriendlyRoutingReason(msg.motivoRouting)}${msg.durataMs ? ` (elaborato in ${(msg.durataMs / 1000).toFixed(1)}s)` : ""}`}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "help",
+                            width: "16px",
+                            height: "16px",
+                            borderRadius: "50%",
+                            backgroundColor: "var(--color-gray-badge-bg)",
+                            color: "var(--color-text-secondary)",
+                            fontSize: "0.7rem",
+                            fontWeight: "bold",
+                            border: "1px solid var(--color-border)"
+                          }}
+                        >
+                          ?
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {!isUser && (
@@ -301,6 +392,43 @@ export const Assistente: React.FC<AssistenteProps> = ({
               </div>
             );
           })}
+          {/* Loading Indicator for AI response */}
+          {isAiLoading && (
+            <div 
+              style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "var(--space-sm)", 
+                alignSelf: "flex-start",
+                flexDirection: "row",
+                maxWidth: "85%"
+              }}
+            >
+              <div style={{ alignSelf: "flex-end", marginBottom: "4px" }}>
+                <AssistantMascot size="sm" />
+              </div>
+              <div 
+                className="message-bubble assistant"
+                style={{
+                  padding: "var(--space-md)",
+                  borderRadius: "var(--radius-lg)",
+                  backgroundColor: "var(--color-background)",
+                  color: "var(--color-text-secondary)",
+                  border: "1px solid var(--color-border)",
+                  borderBottomLeftRadius: "var(--radius-xs)"
+                }}
+              >
+                <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: "4px" }}>
+                  {BRAND.assistantName} sta pensando...
+                </div>
+                <div style={{ display: "flex", gap: "4px", padding: "4px 0" }}>
+                  <span className="dot-loading" style={{ width: "8px", height: "8px", backgroundColor: "var(--color-primary)", borderRadius: "50%", display: "inline-block", animation: "bounce 1.4s infinite ease-in-out both" }}></span>
+                  <span className="dot-loading" style={{ width: "8px", height: "8px", backgroundColor: "var(--color-primary)", borderRadius: "50%", display: "inline-block", animation: "bounce 1.4s infinite ease-in-out both 0.2s" }}></span>
+                  <span className="dot-loading" style={{ width: "8px", height: "8px", backgroundColor: "var(--color-primary)", borderRadius: "50%", display: "inline-block", animation: "bounce 1.4s infinite ease-in-out both 0.4s" }}></span>
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 

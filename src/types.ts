@@ -97,6 +97,11 @@ export interface Messaggio {
   linkInterno?: string; // per reindirizzare a parti dell'app
   linkTesto?: string;
   suggerimenti?: string[];
+  // Nuovi campi per osservabilità e routing AI locale
+  modelloUsato?: "phi" | "qwen" | "errore";
+  motivoRouting?: string;
+  ragAttivo?: boolean;
+  durataMs?: number;
 }
 
 export interface ProfiloUtente {

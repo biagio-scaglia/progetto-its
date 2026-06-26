@@ -15,6 +15,8 @@ import { ChatRepository } from "../repositories/chatRepository";
 import { GeolocationRepository, GeolocationData } from "../repositories/geolocationRepository";
 import { GeolocationService } from "../services/geolocationService";
 import { SERVIZI_MOCK } from "../mockData";
+import { ChatService } from "../services/chatService";
+import { SettingsService } from "../services/settingsService";
 
 /**
  * Hook custom per la gestione dello stato globale dell'applicazione.
@@ -45,6 +47,17 @@ export function useAppState() {
   const [messaggi, setMessaggi] = useState<Messaggio[]>(() => 
     ChatRepository.getMessaggi()
   );
+
+  // Stato dei modelli locali AI
+  const [modelMode, setModelModeState] = useState<"auto" | "phi" | "qwen">(() => 
+    SettingsService.getSettings().modelMode
+  );
+  const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
+
+  const updateModelMode = useCallback((newMode: "auto" | "phi" | "qwen") => {
+    SettingsService.saveSettings({ modelMode: newMode });
+    setModelModeState(newMode);
+  }, []);
 
   // Stato della geolocalizzazione reale
   const [geodata, setGeodata] = useState<GeolocationData>(() =>
@@ -461,8 +474,8 @@ export function useAppState() {
     });
   }, []);
 
-  // Invia un messaggio in chat ed esegue la simulazione di risposta dell'assistente locale
-  const sendMessage = useCallback((testo: string) => {
+  // Invia un messaggio in chat ed esegue la risposta dell'assistente tramite router AI locale
+  const sendMessage = useCallback(async (testo: string) => {
     const userMsg: Messaggio = {
       id: `msg-user-${Date.now()}`,
       mittente: "utente",
@@ -476,92 +489,24 @@ export function useAppState() {
       return updated;
     });
 
-    // Ritardo per simulazione risposta
-    setTimeout(() => {
-      let replyText = "";
-      let linkInterno: string | undefined;
-      let linkTesto: string | undefined;
-      let suggerimenti: string[] = [];
-      const query = testo.toLowerCase();
+    setIsAiLoading(true);
 
-      if (query.includes("scadenz") || query.includes("calendar")) {
-        const inSospeso = scadenze.filter(s => !s.completata);
-        if (inSospeso.length > 0) {
-          replyText = `Attualmente hai ${inSospeso.length} scadenze amministrative importanti in sospeso:\n` +
-            inSospeso.map(s => `• ${s.titolo} (entro il ${s.data})`).join("\n") +
-            `\n\nPuoi visualizzare e aggiungere promemoria nel calendario delle scadenze.`;
-          linkInterno = "scadenze";
-          linkTesto = "Apri Calendario Scadenze";
-        } else {
-          replyText = `Non hai scadenze in sospeso registrate in locale. Puoi aggiungerne di nuove nel calendario delle scadenze.`;
-          linkInterno = "scadenze";
-          linkTesto = "Apri Calendario Scadenze";
-        }
-        suggerimenti = ["Come posso iniziare una guida?", "Quali servizi sono disponibili?"];
-      } else if (query.includes("cie") || query.includes("carta d'identità") || query.includes("carta identita")) {
-        const cie = percorsi.find(p => p.titolo.toLowerCase().includes("carta") || p.titolo.toLowerCase().includes("cie"));
-        if (cie) {
-          replyText = `Hai una guida attiva per il rilascio della CIE (${cie.codice}).\n` +
-            `Sei al passo: "${cie.passiNomi[cie.passoCorrente]}".\n` +
-            `Ricordati di raccogliere tutti i documenti obbligatori prima di recarti allo sportello.`;
-          linkInterno = "pratiche";
-          linkTesto = "Vedi i miei percorsi";
-        } else {
-          replyText = `Per richiedere la Carta d'Identità Elettronica (CIE), devi prenotare un appuntamento sul portale ministeriale e pagare i diritti di segreteria (€22,21). Puoi avviare il percorso guidato nel catalogo servizi per controllare tutti i passaggi.`;
-          linkInterno = "servizi";
-          linkTesto = "Sfoglia Catalogo Guide";
-        }
-        suggerimenti = ["Quali sono le mie scadenze?", "Come cambio residenza?"];
-      } else if (query.includes("residenza")) {
-        const res = percorsi.find(p => p.titolo.toLowerCase().includes("residenza"));
-        if (res) {
-          replyText = `Hai aperto la guida al 'Cambio di Residenza online'.\n` +
-            `Sei al passo: "${res.passiNomi[res.passoCorrente]}" (${res.passiDettagli[res.passoCorrente]}).\n` +
-            `Ricordati di verificare l'elenco dei requisiti ed i documenti catastali necessari.`;
-          linkInterno = "pratiche";
-          linkTesto = "Vedi i miei percorsi";
-        } else {
-          replyText = `Il Cambio di Residenza online si compila sul portale nazionale ANPR. Avvia il percorso guida nel catalogo dei servizi per controllare l'elenco dei requisiti e dei documenti necessari.`;
-          linkInterno = "servizi";
-          linkTesto = "Sfoglia Catalogo Guide";
-        }
-        suggerimenti = ["Come richiedo l'Assegno Unico?", "Quali sono le mie scadenze?"];
-      } else if (query.includes("assegno") || query.includes("inps")) {
-        const au = percorsi.find(p => p.titolo.toLowerCase().includes("assegno"));
-        if (au) {
-          replyText = `Hai una guida attiva per l'Assegno Unico INPS (${au.codice}).\n` +
-            `Sei al passo: "${au.passiNomi[au.passoCorrente]}".\n` +
-            `Assicurati di verificare se ci sono richieste di integrazione e controlla i documenti necessari.`;
-          linkInterno = "pratiche";
-          linkTesto = "Vedi i miei percorsi";
-        } else {
-          replyText = `L'Assegno Unico INPS richiede di compilare la domanda inserendo i dati dei figli e l'IBAN per l'accredito sul portale MyINPS. Puoi attivare la guida nel catalogo servizi per organizzare i passaggi.`;
-          linkInterno = "servizi";
-          linkTesto = "Apri Catalogo Guide";
-        }
-        suggerimenti = ["Come cambio residenza?", "Mostrami le mie scadenze"];
-      } else {
-        replyText = `Ho ricevuto la tua richiesta: "${testo}".\n\nIn quanto Software di Guida, posso darti istruzioni pratiche su come procedere. Prova a chiedermi delle "scadenze", del "Cambio di Residenza", della "CIE" o dell'assegno "INPS" per vedere lo stato delle tue guide o dei servizi disponibili.`;
-        suggerimenti = ["Quali sono le mie scadenze?", "Come cambio residenza?", "Quali servizi sono disponibili?"];
-      }
-
-      const assistantMsg: Messaggio = {
-        id: `msg-ast-${Date.now()}`,
-        mittente: "assistente",
-        testo: replyText,
-        timestamp: new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }),
-        linkInterno,
-        linkTesto,
-        suggerimenti
-      };
+    try {
+      // Pass the current messages plus userMsg to get accurate context
+      const currentHistory = ChatRepository.getMessaggi();
+      const { assistantMessage } = await ChatService.processMessage(testo, currentHistory, modelMode);
 
       setMessaggi(currentMsgs => {
-        const finalMsgs = [...currentMsgs, assistantMsg];
+        const finalMsgs = [...currentMsgs, assistantMessage];
         ChatRepository.saveMessaggi(finalMsgs);
         return finalMsgs;
       });
-    }, 850);
-  }, [scadenze, percorsi]);
+    } catch (err) {
+      console.error("AI Generation Error:", err);
+    } finally {
+      setIsAiLoading(false);
+    }
+  }, [modelMode]);
 
   const clearChat = useCallback(() => {
     ChatRepository.clearMessaggi();
@@ -601,6 +546,9 @@ export function useAppState() {
     clearChat,
     deleteMessage,
     richiediGeolocalizzazione,
-    revocaGeolocalizzazione
+    revocaGeolocalizzazione,
+    modelMode,
+    updateModelMode,
+    isAiLoading
   };
 }

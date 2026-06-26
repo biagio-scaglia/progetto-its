@@ -52,7 +52,10 @@ function App() {
     clearChat,
     deleteMessage,
     richiediGeolocalizzazione,
-    revocaGeolocalizzazione
+    revocaGeolocalizzazione,
+    modelMode,
+    updateModelMode,
+    isAiLoading
   } = useAppState();
 
   // Stato della Navigazione locale della UI
@@ -252,6 +255,9 @@ function App() {
           onSelectPercorso={handleSelectPercorso}
           onClearChat={clearChat}
           onDeleteMessage={deleteMessage}
+          modelMode={modelMode}
+          onUpdateModelMode={updateModelMode}
+          isAiLoading={isAiLoading}
         />
       )}
 
