@@ -1,32 +1,22 @@
 export interface AISettings {
   ollamaEndpoint: string;
-  phiModel: string;
   qwenModel: string;
-  phiTimeout: number;
   qwenTimeout: number;
-  useQwenComplex: boolean;
   useQwenRewriting: boolean;
-  modelMode: "auto" | "phi" | "qwen";
   // Nuove impostazioni di sicurezza AI
   safeMode: boolean;
   protectionLevel: "standard" | "strict";
-  useQwenSecondOpinion: boolean;
 }
 
 const STORAGE_KEY = "sdit_ai_settings";
 
 const DEFAULT_SETTINGS: AISettings = {
   ollamaEndpoint: "http://localhost:11434",
-  phiModel: "phi3.5-mini-ita",
   qwenModel: "qwen2-7b",
-  phiTimeout: 15000,
   qwenTimeout: 30000,
-  useQwenComplex: true,
   useQwenRewriting: true,
-  modelMode: "auto",
   safeMode: true,
   protectionLevel: "standard",
-  useQwenSecondOpinion: true,
 };
 
 export class SettingsService {

@@ -16,8 +16,6 @@ export interface AssistenteProps {
   onSelectPercorso: (id: string) => void;
   onClearChat: () => void;
   onDeleteMessage: (id: string) => void;
-  modelMode?: "auto" | "phi" | "qwen";
-  onUpdateModelMode?: (mode: "auto" | "phi" | "qwen") => void;
   isAiLoading?: boolean;
 }
 
@@ -28,8 +26,6 @@ export const Assistente: React.FC<AssistenteProps> = ({
   onSelectPercorso,
   onClearChat,
   onDeleteMessage,
-  modelMode = "auto",
-  onUpdateModelMode,
   isAiLoading = false
 }) => {
   const [inputText, setInputText] = useState("");
@@ -148,30 +144,13 @@ export const Assistente: React.FC<AssistenteProps> = ({
           <p className="page-subtitle" style={{ margin: 0 }}>Digita le tue domande per capire quale servizio attivare, quali scadenze rispettare o come raccogliere i documenti necessari.</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-xs)" }}>
-            <label htmlFor="model-select" style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-secondary)", whiteSpace: "nowrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", minHeight: "36px" }}>
+            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-secondary)" }}>
               Motore AI:
-            </label>
-            <select
-              id="model-select"
-              value={modelMode}
-              onChange={(e) => onUpdateModelMode?.(e.target.value as any)}
-              className="form-input"
-              style={{ 
-                padding: "6px 12px", 
-                fontSize: "0.85rem", 
-                width: "auto", 
-                minHeight: "36px",
-                borderColor: "var(--color-border)",
-                borderRadius: "var(--radius-sm)",
-                backgroundColor: "var(--color-surface)",
-                cursor: "pointer"
-              }}
-            >
-              <option value="auto">Automatico (Consigliato)</option>
-              <option value="phi">Solo Phi (Veloce)</option>
-              <option value="qwen">Solo Qwen (Avanzato)</option>
-            </select>
+            </span>
+            <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--color-primary)" }}>
+              Qwen (Locale)
+            </span>
           </div>
 
           {/* Safety Settings Dashboard */}
@@ -367,12 +346,12 @@ export const Assistente: React.FC<AssistenteProps> = ({
                             fontWeight: 600,
                             padding: "2px 6px",
                             borderRadius: "var(--radius-sm)",
-                            backgroundColor: msg.modelloUsato === "phi" ? "var(--color-primary-light)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.1)" : "var(--color-danger-bg)",
-                            color: msg.modelloUsato === "phi" ? "var(--color-primary)" : msg.modelloUsato === "qwen" ? "rgb(124, 58, 237)" : "var(--color-danger)",
-                            border: `1px solid ${msg.modelloUsato === "phi" ? "rgba(0, 85, 179, 0.15)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.15)" : "var(--color-danger-border)"}`
+                            backgroundColor: msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.1)" : "var(--color-danger-bg)",
+                            color: msg.modelloUsato === "qwen" ? "rgb(124, 58, 237)" : "var(--color-danger)",
+                            border: `1px solid ${msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.15)" : "var(--color-danger-border)"}`
                           }}
                         >
-                          Generato con {msg.modelloUsato === "phi" ? "Phi (Veloce)" : msg.modelloUsato === "qwen" ? "Qwen (Avanzato)" : "Errore"}
+                          Generato con {msg.modelloUsato === "qwen" ? "Qwen (Locale)" : "Errore"}
                         </span>
                       )}
 

@@ -16,7 +16,6 @@ import { GeolocationRepository, GeolocationData } from "../repositories/geolocat
 import { GeolocationService } from "../services/geolocationService";
 import { SERVIZI_MOCK } from "../mockData";
 import { ChatService } from "../services/chatService";
-import { SettingsService } from "../services/settingsService";
 
 /**
  * Hook custom per la gestione dello stato globale dell'applicazione.
@@ -48,16 +47,7 @@ export function useAppState() {
     ChatRepository.getMessaggi()
   );
 
-  // Stato dei modelli locali AI
-  const [modelMode, setModelModeState] = useState<"auto" | "phi" | "qwen">(() => 
-    SettingsService.getSettings().modelMode
-  );
   const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
-
-  const updateModelMode = useCallback((newMode: "auto" | "phi" | "qwen") => {
-    SettingsService.saveSettings({ modelMode: newMode });
-    setModelModeState(newMode);
-  }, []);
 
   // Stato della geolocalizzazione reale
   const [geodata, setGeodata] = useState<GeolocationData>(() =>
@@ -494,7 +484,7 @@ export function useAppState() {
     try {
       // Pass the current messages plus userMsg to get accurate context
       const currentHistory = ChatRepository.getMessaggi();
-      const { assistantMessage } = await ChatService.processMessage(testo, currentHistory, modelMode);
+      const { assistantMessage } = await ChatService.processMessage(testo, currentHistory);
 
       setMessaggi(currentMsgs => {
         const finalMsgs = [...currentMsgs, assistantMessage];
@@ -506,7 +496,7 @@ export function useAppState() {
     } finally {
       setIsAiLoading(false);
     }
-  }, [modelMode]);
+  }, []);
 
   const clearChat = useCallback(() => {
     ChatRepository.clearMessaggi();
@@ -547,8 +537,6 @@ export function useAppState() {
     deleteMessage,
     richiediGeolocalizzazione,
     revocaGeolocalizzazione,
-    modelMode,
-    updateModelMode,
     isAiLoading
   };
 }

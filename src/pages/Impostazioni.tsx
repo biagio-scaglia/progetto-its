@@ -357,20 +357,8 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="ai-phi-model">Nome Modello Phi (Veloce)</label>
-                  <input
-                    id="ai-phi-model"
-                    type="text"
-                    className="form-input"
-                    value={aiSettings.phiModel}
-                    onChange={e => handleAISettingChange("phiModel", e.target.value)}
-                    placeholder="phi3.5-mini-ita"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="ai-qwen-model">Nome Modello Qwen (Avanzato)</label>
+                <div className="form-group" style={{ gridColumn: "span 2" }}>
+                  <label className="form-label" htmlFor="ai-qwen-model">Nome Modello Qwen</label>
                   <input
                     id="ai-qwen-model"
                     type="text"
@@ -381,18 +369,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="ai-phi-timeout">Timeout Phi (millisecondi)</label>
-                  <input
-                    id="ai-phi-timeout"
-                    type="number"
-                    className="form-input"
-                    value={aiSettings.phiTimeout}
-                    onChange={e => handleAISettingChange("phiTimeout", parseInt(e.target.value) || 15000)}
-                  />
-                </div>
-
-                <div className="form-group">
+                <div className="form-group" style={{ gridColumn: "span 2" }}>
                   <label className="form-label" htmlFor="ai-qwen-timeout">Timeout Qwen (millisecondi)</label>
                   <input
                     id="ai-qwen-timeout"
@@ -405,21 +382,6 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
               </div>
 
               <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: "var(--space-md)", marginTop: "var(--space-md)" }}>
-                <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
-                  <div>
-                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Usa Qwen per query complesse</strong>
-                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                      Instrada automaticamente le richieste complesse o multi-step su Qwen.
-                    </span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={aiSettings.useQwenComplex}
-                    onChange={e => handleAISettingChange("useQwenComplex", e.target.checked)}
-                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
-                  />
-                </div>
-
                 <div className="flex justify-between items-center">
                   <div>
                     <strong style={{ display: "block", fontSize: "0.95rem" }}>Usa Qwen per query rewriting RAG</strong>
@@ -467,7 +429,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   />
                 </div>
 
-                <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                <div className="flex justify-between items-center">
                   <div>
                     <strong style={{ display: "block", fontSize: "0.95rem" }}>Livello di Protezione</strong>
                     <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
@@ -490,22 +452,6 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                     <option value="standard">Standard</option>
                     <option value="strict">Strict (Massimo)</option>
                   </select>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <div>
-                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Second Opinion con Qwen sui rischi</strong>
-                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                      Utilizza Qwen per riclassificare e validare input/RAG se la valutazione di base rileva anomalie.
-                    </span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={aiSettings.useQwenSecondOpinion}
-                    disabled={!aiSettings.safeMode}
-                    onChange={e => handleAISettingChange("useQwenSecondOpinion", e.target.checked)}
-                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)", opacity: aiSettings.safeMode ? 1 : 0.5 }}
-                  />
                 </div>
               </div>
             </div>

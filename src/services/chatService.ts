@@ -12,8 +12,7 @@ export class ChatService {
    */
   static async processMessage(
     inputText: string,
-    history: Messaggio[],
-    modelMode: "auto" | "phi" | "qwen"
+    history: Messaggio[]
   ): Promise<{ userMessage: Messaggio; assistantMessage: Messaggio }> {
     const timestamp = new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
 
@@ -59,7 +58,7 @@ export class ChatService {
       }));
 
       // Generate answer using only the question part
-      const result = await ModelRouter.generateAnswerSecure(updatedHistory, modelMode, question);
+      const result = await ModelRouter.generateAnswerSecure(updatedHistory, question);
       
       // Prepend greeting ack to the generated LLM text
       finalAnswer = `${greeting} ${result.text}`;
@@ -78,7 +77,7 @@ export class ChatService {
         testo: m.testo
       }));
 
-      const result = await ModelRouter.generateAnswerSecure(updatedHistory, modelMode, inputText);
+      const result = await ModelRouter.generateAnswerSecure(updatedHistory, inputText);
       
       finalAnswer = result.text;
       modelUsed = result.modelUsed;

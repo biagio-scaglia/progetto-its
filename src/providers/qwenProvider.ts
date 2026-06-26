@@ -1,5 +1,10 @@
 import { SettingsService } from "../services/settingsService";
-import { ProviderOptions } from "./phiProvider";
+
+export interface ProviderOptions {
+  temperature?: number;
+  systemPrompt?: string;
+  timeout?: number;
+}
 
 export class QwenProvider {
   /**

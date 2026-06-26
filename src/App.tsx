@@ -53,8 +53,6 @@ function App() {
     deleteMessage,
     richiediGeolocalizzazione,
     revocaGeolocalizzazione,
-    modelMode,
-    updateModelMode,
     isAiLoading
   } = useAppState();
 
@@ -255,8 +253,6 @@ function App() {
           onSelectPercorso={handleSelectPercorso}
           onClearChat={clearChat}
           onDeleteMessage={deleteMessage}
-          modelMode={modelMode}
-          onUpdateModelMode={updateModelMode}
           isAiLoading={isAiLoading}
         />
       )}

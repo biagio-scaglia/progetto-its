@@ -1,8 +1,6 @@
 import { SettingsService } from "./settingsService";
-import { PhiProvider } from "../providers/phiProvider";
 import { QwenProvider } from "../providers/qwenProvider";
 import { PromptBuilder } from "./promptBuilder";
-import { detectComplexity } from "../utils/detectComplexity";
 import { RetrievalResult, RagService } from "./ragService";
 import { TechnicalRoutingReason } from "../utils/routingReason";
 import { InputGuard } from "../security/inputGuard";
@@ -11,7 +9,7 @@ import { OutputGuard } from "../security/outputGuard";
 
 export interface GenerationResult {
   text: string;
-  modelUsed: "phi" | "qwen" | "errore";
+  modelUsed: "qwen" | "errore";
   reason: TechnicalRoutingReason;
   durationMs: number;
   ragActive: boolean;
@@ -24,9 +22,9 @@ export interface GenerationResult {
 
 export class ModelRouter {
   /**
-   * Decides if Qwen is needed for query rewriting or cross-document synthesis.
+   * Decides if RAG query rewriting is needed based on query characteristics.
    */
-  static shouldUseQwenForRag(query: string, retrievedDocs: RetrievalResult[]): boolean {
+  static shouldRewriteRetrievalQuery(query: string, retrievedDocs: RetrievalResult[]): boolean {
     const settings = SettingsService.getSettings();
     if (!settings.useQwenRewriting) return false;
 
@@ -50,46 +48,7 @@ export class ModelRouter {
   }
 
   /**
-   * Selection engine: routes the query to Phi or Qwen and provides the technical reason.
-   */
-  static routeModel(
-    mode: "auto" | "phi" | "qwen",
-    prompt: string,
-    retrievedDocs: RetrievalResult[],
-    promptRisk = 0,
-    ragRisk = 0
-  ): { model: "phi" | "qwen"; reason: TechnicalRoutingReason } {
-    const settings = SettingsService.getSettings();
-
-    if (mode === "phi") {
-      return { model: "phi", reason: "user_forced_phi" };
-    }
-    if (mode === "qwen") {
-      return { model: "qwen", reason: "user_forced_qwen" };
-    }
-
-    // If auto mode:
-    // 1. Force Qwen for second opinion if safety risk is borderline/elevated
-    if (settings.safeMode && settings.useQwenSecondOpinion && (promptRisk >= 0.35 || ragRisk >= 0.35)) {
-      return { model: "qwen", reason: "complexity_routed_qwen" }; // Route to advanced model for safety
-    }
-
-    // 2. Route to Qwen if prompt is semantically complex
-    if (settings.useQwenComplex && detectComplexity(prompt)) {
-      return { model: "qwen", reason: "complexity_routed_qwen" };
-    }
-
-    // 3. Route to Qwen if RAG requires advanced processing
-    if (this.shouldUseQwenForRag(prompt, retrievedDocs)) {
-      return { model: "qwen", reason: "rag_query_rewrite_qwen" };
-    }
-
-    // 4. Fast path default: Phi
-    return { model: "phi", reason: "phi_default_fast_path" };
-  }
-
-  /**
-   * Orchestrates the query rewriting step if Qwen is available.
+   * Orchestrates the query rewriting step using the local Qwen model.
    */
   static async rewriteRetrievalQueryIfNeeded(query: string): Promise<string> {
     try {
@@ -110,12 +69,11 @@ export class ModelRouter {
   }
 
   /**
-   * Main generation entry point: routes, handles prompt construction, executes local models,
-   * runs fallback logic on errors, and validates output against prompt injection/leaks.
+   * Main generation entry point: handles prompt construction, executes local Qwen model,
+   * and validates output against prompt injection/leaks.
    */
   static async generateAnswerSecure(
     chatHistory: { role: "utente" | "assistente"; testo: string }[],
-    mode: "auto" | "phi" | "qwen",
     originalQuery: string
   ): Promise<GenerationResult> {
     const settings = SettingsService.getSettings();
@@ -132,7 +90,6 @@ export class ModelRouter {
 
       if (inputAnalysis.decision === "block") {
         const duration = Date.now() - startTime;
-        // Minimal log
         this.logMinimalMetadata(duration, "errore", inputRiskScore, 0, 0, 0, true);
         return {
           text: "Nota di sicurezza: La tua richiesta ha attivato le policy di sicurezza di SDIT e non può essere elaborata.",
@@ -148,17 +105,14 @@ export class ModelRouter {
       }
     }
 
-    // 2. Initial local RAG search with the query
+    // 2. Initial RAG search
     let retrieved = RagService.retrieve(queryForGeneration);
-    let queryRewritten = false;
-
     // 3. Local Query Rewriting check
-    if (mode === "auto" && settings.useQwenRewriting && this.shouldUseQwenForRag(queryForGeneration, retrieved)) {
+    if (settings.useQwenRewriting && this.shouldRewriteRetrievalQuery(queryForGeneration, retrieved)) {
       const optimizedQuery = await this.rewriteRetrievalQueryIfNeeded(queryForGeneration);
       if (optimizedQuery !== queryForGeneration) {
         retrieved = RagService.retrieve(optimizedQuery);
         queryForGeneration = optimizedQuery;
-        queryRewritten = true;
       }
     }
 
@@ -172,10 +126,7 @@ export class ModelRouter {
       ragRiskScore = ragAnalysis.quarantinedChunks.reduce((max, chunk) => Math.max(max, chunk.riskScore), 0);
     }
 
-    // 5. Determine base model routing
-    const { model, reason } = this.routeModel(mode, queryForGeneration, retrieved, inputRiskScore, ragRiskScore);
-
-    // 6. Construct prompt structure (incorporating RAG context if found)
+    // 5. Build prompt structure (incorporating RAG context if found)
     const ragActive = retrieved.length > 0;
     const context = RagService.buildRagContext(retrieved);
     
@@ -198,57 +149,17 @@ export class ModelRouter {
     }
 
     let finalAnswer = "";
-    let modelUsed: "phi" | "qwen" | "errore" = "errore";
-    let finalReason = reason;
+    let modelUsed: "qwen" | "errore" = "errore";
+    let finalReason: TechnicalRoutingReason = "qwen_generation";
 
-    // 7. Try generating response with chosen model and trigger fallback if necessary
     try {
-      if (model === "phi") {
-        try {
-          console.log(`[ModelRouter] Executing chosen model: Phi (${settings.phiModel}), Reason: ${reason}`);
-          const systemPrompt = PromptBuilder.getPhiSystemPrompt();
-          const { text } = await PhiProvider.generateWithPhi(providerMessages, { systemPrompt });
-          finalAnswer = text;
-          modelUsed = "phi";
-        } catch (phiError) {
-          if (mode === "auto") {
-            // Fallback: Phi failed, try Qwen
-            console.warn("[ModelRouter] Phi failed. Falling back to Qwen...", phiError);
-            const systemPrompt = PromptBuilder.getQwenSystemPrompt();
-            const { text } = await QwenProvider.generateWithQwen(providerMessages, { systemPrompt });
-            finalAnswer = text;
-            modelUsed = "qwen";
-            finalReason = "phi_failed_qwen_fallback";
-          } else {
-            throw phiError;
-          }
-        }
-      } else {
-        // Chosen model is Qwen
-        try {
-          console.log(`[ModelRouter] Executing chosen model: Qwen (${settings.qwenModel}), Reason: ${reason}`);
-          const systemPrompt = PromptBuilder.getQwenSystemPrompt();
-          const { text } = await QwenProvider.generateWithQwen(providerMessages, { systemPrompt });
-          finalAnswer = text;
-          modelUsed = "qwen";
-          finalReason = queryRewritten && reason === "phi_default_fast_path" ? "rag_query_rewrite_qwen" : reason;
-        } catch (qwenError) {
-          if (mode === "auto") {
-            // Fallback: Qwen failed or unavailable, try Phi
-            console.warn("[ModelRouter] Qwen failed. Falling back to Phi...", qwenError);
-            // Fallback to Phi with extra-restrictive policy prompt
-            const systemPrompt = PromptBuilder.getPhiSystemPrompt();
-            const { text } = await PhiProvider.generateWithPhi(providerMessages, { systemPrompt });
-            finalAnswer = text;
-            modelUsed = "phi";
-            finalReason = "qwen_unavailable_phi_retry";
-          } else {
-            throw qwenError;
-          }
-        }
-      }
+      console.log(`[ModelRouter] Executing local Qwen model (${settings.qwenModel})...`);
+      const systemPrompt = PromptBuilder.getQwenSystemPrompt();
+      const { text } = await QwenProvider.generateWithQwen(providerMessages, { systemPrompt });
+      finalAnswer = text;
+      modelUsed = "qwen";
 
-      // 8. Layer 5: Output Guard
+      // 6. Layer 5: Output Guard
       if (settings.safeMode) {
         const outputAnalysis = OutputGuard.validateModelOutput(finalAnswer, context, settings.protectionLevel);
         finalAnswer = outputAnalysis.sanitizedOutput;
@@ -273,12 +184,12 @@ export class ModelRouter {
       };
 
     } catch (finalError: any) {
-      console.error("[ModelRouter] All local model paths failed:", finalError);
+      console.error("[ModelRouter] Local model execution failed:", finalError);
       const duration = Date.now() - startTime;
       this.logMinimalMetadata(duration, "errore", inputRiskScore, ragRiskScore, retrieved.length, quarantinedChunksCount, false);
 
       return {
-        text: `Errore di connessione locale:\n${finalError.message || "Impossibile contattare il server Ollama."}\n\nAssicurati che Ollama sia in esecuzione (http://localhost:11434) e che i modelli '${settings.phiModel}' e '${settings.qwenModel}' siano stati installati eseguendo nel terminale:\nollama run ${settings.phiModel}\nollama run ${settings.qwenModel}`,
+        text: `Errore di connessione locale:\n${finalError.message || "Impossibile contattare il server Ollama."}\n\nAssicurati che Ollama sia in esecuzione (http://localhost:11434) e che il modello '${settings.qwenModel}' sia stato installato eseguendo nel terminale:\nollama run ${settings.qwenModel}`,
         modelUsed: "errore",
         reason: "system_error",
         durationMs: duration,

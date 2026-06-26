@@ -98,7 +98,7 @@ export interface Messaggio {
   linkTesto?: string;
   suggerimenti?: string[];
   // Nuovi campi per osservabilità e routing AI locale
-  modelloUsato?: "phi" | "qwen" | "errore";
+  modelloUsato?: "qwen" | "errore";
   motivoRouting?: string;
   ragAttivo?: boolean;
   durataMs?: number;
