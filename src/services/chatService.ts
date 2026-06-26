@@ -1,10 +1,13 @@
 import { Messaggio } from "../types";
 import { RagService } from "./ragService";
 import { ModelRouter } from "./modelRouter";
+import { IntentClassifier } from "./intentClassifier";
+import { SocialResponses } from "./socialResponses";
 
 export class ChatService {
   /**
-   * Processes a user message, runs local index updates, queries the ModelRouter,
+   * Processes a user message, runs local index updates, pre-classifies query intent,
+   * routes to instant conversational response or RAG/LLM local pipeline,
    * detects contextual application deep links, and yields the final message pair.
    */
   static async processMessage(
@@ -25,16 +28,70 @@ export class ChatService {
     // 2. Incremental refresh of the RAG index
     RagService.refreshIndex();
 
-    // 3. Prepare chat history format for the router
-    const updatedHistory = [...history, userMessage].map(m => ({
-      role: m.mittente === "utente" ? "utente" as const : "assistente" as const,
-      testo: m.testo
-    }));
+    // 3. Pre-classify intent
+    const intent = IntentClassifier.classifyIntent(inputText);
 
-    // 4. Generate answer via local model router
-    const result = await ModelRouter.generateAnswerSecure(updatedHistory, modelMode, inputText);
+    let finalAnswer = "";
+    let modelUsed: "phi" | "qwen" | "errore" | undefined = undefined;
+    let reason: string | undefined = undefined;
+    let ragActive = false;
+    let durationMs = 0;
+    let inputRiskScore = 0;
+    let ragRiskScore = 0;
+    let quarantinedChunksCount = 0;
+    let outputBlocked = false;
 
-    // 5. Contextual app deep-linking analyzer (maintaining simulated parity)
+    const isSocialOrGreeting = ["greeting", "small_talk", "thanks", "farewell", "capability_question", "ambiguous"].includes(intent);
+
+    if (isSocialOrGreeting) {
+      // Bypasses Ollama and RAG completely for social / capability replies (0ms, extremely natural)
+      finalAnswer = SocialResponses.generateSocialReply(intent);
+      reason = "social_bypass";
+      durationMs = 0;
+    } else if (intent === "domain_question_with_greeting") {
+      // MISTO: Saluto + Domanda
+      const { greeting, question } = SocialResponses.splitGreetingAndQuestion(inputText);
+      
+      // Clean query input for RAG history context: replaces combined query with only question to focus the LLM
+      const updatedHistory = [...history, { ...userMessage, testo: question }].map(m => ({
+        role: m.mittente === "utente" ? "utente" as const : "assistente" as const,
+        testo: m.testo
+      }));
+
+      // Generate answer using only the question part
+      const result = await ModelRouter.generateAnswerSecure(updatedHistory, modelMode, question);
+      
+      // Prepend greeting ack to the generated LLM text
+      finalAnswer = `${greeting} ${result.text}`;
+      modelUsed = result.modelUsed;
+      reason = result.reason;
+      ragActive = result.ragActive;
+      durationMs = result.durationMs;
+      inputRiskScore = result.inputRiskScore || 0;
+      ragRiskScore = result.ragRiskScore || 0;
+      quarantinedChunksCount = result.quarantinedChunksCount || 0;
+      outputBlocked = result.outputBlocked || false;
+    } else {
+      // PURE DOMAIN QUESTION
+      const updatedHistory = [...history, userMessage].map(m => ({
+        role: m.mittente === "utente" ? "utente" as const : "assistente" as const,
+        testo: m.testo
+      }));
+
+      const result = await ModelRouter.generateAnswerSecure(updatedHistory, modelMode, inputText);
+      
+      finalAnswer = result.text;
+      modelUsed = result.modelUsed;
+      reason = result.reason;
+      ragActive = result.ragActive;
+      durationMs = result.durationMs;
+      inputRiskScore = result.inputRiskScore || 0;
+      ragRiskScore = result.ragRiskScore || 0;
+      quarantinedChunksCount = result.quarantinedChunksCount || 0;
+      outputBlocked = result.outputBlocked || false;
+    }
+
+    // 4. Contextual app deep-linking analyzer based on the answer/query text
     let linkInterno: string | undefined;
     let linkTesto: string | undefined;
     let suggerimenti: string[] = [
@@ -43,7 +100,7 @@ export class ChatService {
       "Dove trovo i miei documenti?"
     ];
 
-    const lowercaseAnswer = result.text.toLowerCase();
+    const lowercaseAnswer = finalAnswer.toLowerCase();
     const lowercaseQuery = inputText.toLowerCase();
 
     if (lowercaseAnswer.includes("scadenz") || lowercaseAnswer.includes("calendar") || lowercaseQuery.includes("scadenz")) {
@@ -68,23 +125,23 @@ export class ChatService {
       suggerimenti = ["Come configuro Ollama?", "Che modello consigli?"];
     }
 
-    // 6. Create assistant message with observation metadata
+    // 5. Create assistant message with observation metadata
     const assistantMessage: Messaggio = {
       id: `msg-ast-${Date.now()}`,
       mittente: "assistente",
-      testo: result.text,
+      testo: finalAnswer,
       timestamp,
       linkInterno,
       linkTesto,
       suggerimenti,
-      modelloUsato: result.modelUsed,
-      motivoRouting: result.reason,
-      ragAttivo: result.ragActive,
-      durataMs: result.durationMs,
-      inputRiskScore: result.inputRiskScore,
-      ragRiskScore: result.ragRiskScore,
-      quarantinedChunksCount: result.quarantinedChunksCount,
-      outputBlocked: result.outputBlocked
+      modelloUsato: modelUsed,
+      motivoRouting: reason,
+      ragAttivo: ragActive,
+      durataMs: durationMs,
+      inputRiskScore,
+      ragRiskScore,
+      quarantinedChunksCount,
+      outputBlocked
     };
 
     return {

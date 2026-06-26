@@ -6,6 +6,7 @@ export type TechnicalRoutingReason =
   | "rag_query_rewrite_qwen"
   | "phi_failed_qwen_fallback"
   | "qwen_unavailable_phi_retry"
+  | "social_bypass"
   | "system_error";
 
 const REASON_MESSAGES: Record<TechnicalRoutingReason, string> = {
@@ -16,6 +17,7 @@ const REASON_MESSAGES: Record<TechnicalRoutingReason, string> = {
   rag_query_rewrite_qwen: "Scelta automatica: instradato su Qwen per query rewriting o sintesi incrociata di documenti.",
   phi_failed_qwen_fallback: "Ripristino di sicurezza: Phi ha riscontrato un errore o timeout; elaborato da Qwen.",
   qwen_unavailable_phi_retry: "Ripristino di sicurezza: Qwen non è disponibile; elaborato sul canale Phi.",
+  social_bypass: "Risposta rapida conversazionale (senza modello generativo).",
   system_error: "Errore di sistema: nessun modello locale ha risposto. Assicurati che Ollama sia avviato."
 };
 
