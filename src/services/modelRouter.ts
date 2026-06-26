@@ -105,13 +105,13 @@ export class ModelRouter {
       }
     }
 
-    // 2. Initial RAG search
-    let retrieved = RagService.retrieve(queryForGeneration);
+    // 2. Initial RAG search (hybrid: vector + TF-IDF)
+    let retrieved = await RagService.retrieveHybrid(queryForGeneration);
     // 3. Local Query Rewriting check
     if (settings.useQwenRewriting && this.shouldRewriteRetrievalQuery(queryForGeneration, retrieved)) {
       const optimizedQuery = await this.rewriteRetrievalQueryIfNeeded(queryForGeneration);
       if (optimizedQuery !== queryForGeneration) {
-        retrieved = RagService.retrieve(optimizedQuery);
+        retrieved = await RagService.retrieveHybrid(optimizedQuery);
         queryForGeneration = optimizedQuery;
       }
     }

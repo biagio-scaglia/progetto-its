@@ -2,6 +2,7 @@ export interface AISettings {
   ollamaEndpoint: string;
   qwenModel: string;
   qwenTimeout: number;
+  embeddingModel: string;
   useQwenRewriting: boolean;
   // Nuove impostazioni di sicurezza AI
   safeMode: boolean;
@@ -14,6 +15,7 @@ const DEFAULT_SETTINGS: AISettings = {
   ollamaEndpoint: "http://localhost:11434",
   qwenModel: "qwen2-7b",
   qwenTimeout: 30000,
+  embeddingModel: "bge-m3",
   useQwenRewriting: true,
   safeMode: true,
   protectionLevel: "standard",

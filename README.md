@@ -9,7 +9,8 @@ Questa applicazione desktop (SDIT) è uno strumento privato di guida e orientame
 A differenza di un gestionale o di un client di autenticazione ministeriale, questo software agisce come un assistente personale offline. Fornisce:
 - **Orientamento e spiegazioni chiare**: Istruzioni passo-passo per servizi come il Cambio di Residenza online o il rilascio della CIE (Carta d'Identità Elettronica).
 - **Checklist documentali**: Un elenco dettagliato dei requisiti e dei documenti necessari da verificare prima di effettuare le istanze sui portali istituzionali.
-- **Privacy totale e archiviazione offline**: Tutti i dati anagrafici, i consensi e i documenti caricati rimangono esclusivamente all'interno del dispositivo dell'utente.
+- **Assistente AI conversazionale locale**: Chat con LLM locale (Qwen) integrato con RAG su knowledge base markdown e dati utente.
+- **Privacy totale e archiviazione offline**: Tutti i dati anagrafici, i consensi e i documenti caricati rimangono esclusivamente all'interno del dispositivo dell'utente. Nessuna chiamata cloud.
 
 ---
 
@@ -21,36 +22,158 @@ L'applicazione è sviluppata con tecnologie moderne, sicure e performanti:
 - **Bundler e Build System**: [Vite](https://vite.dev/).
 - **Design System & Stile**: CSS Vanilla ispirato alle linee guida istituzionali dei servizi digitali pubblici italiani (*Designers Italia*), con layout a contrasto accessibile e solo tema chiaro (Light Theme).
 - **Iconografia**: Icone vettoriali ad alta definizione fornite da `@radix-ui/react-icons`.
+- **LLM Locale**: [Ollama](https://ollama.com/) + modello **Qwen 2 7B** per generazione risposte conversazionali.
+- **Embedding Model**: [BGE-M3](https://huggingface.co/BAAI/bge-m3) via Ollama, multilingue, per retrieval vettoriale.
+
+---
+
+## 🤖 Architettura AI Locale
+
+### Modello LLM
+
+| Modello | Ruolo | Uso |
+|---------|-------|-----|
+| **Qwen 2 7B** | Motore principale | Chat, RAG grounded, sintesi, classificazione intento, query rewriting |
+
+Il modello viene servito localmente tramite **Ollama** su `http://localhost:11434`.
+
+### Pipeline Conversazionale
+
+```
+Input Utente
+    │
+    ├─→ [1] Intent Pre-Classifier (classificazione intento)
+    │       small_talk / greeting / domain_question / ...
+    │
+    ├─→ [2] Input Guard (anti prompt-injection)
+    │       Risk scoring, sanitizzazione, blocco se pericoloso
+    │
+    ├─→ [3] RAG Hybrid Retrieval
+    │       Vector search (BGE-M3) + TF-IDF dinamico
+    │
+    ├─→ [4] RAG Guard (ispeziona chunk recuperati)
+    │       Quarantena chunk sospetti, trust scoring
+    │
+    ├─→ [5] Prompt Builder (sistema / utente / contesto separati)
+    │
+    ├─→ [6] Qwen Generation (LLM locale)
+    │
+    └─→ [7] Output Guard (validazione risposta)
+            Blocco leak prompt, dati sensibili, hallucination check
+```
+
+### RAG (Retrieval-Augmented Generation)
+
+Il sistema RAG è **ibrido**, combinando due strategie di retrieval:
+
+1. **Vector Search (Knowledge Base)**: Embedding BGE-M3 su documenti markdown statici nella cartella `knowledge/`. Usa dot-product su vettori L2-normalizzati.
+2. **TF-IDF dinamico (Dati Utente)**: Indicizzazione in tempo reale di guide mock, documenti utente, scadenze e profilo da `localStorage`.
+
+#### Knowledge Base
+
+I documenti di riferimento si trovano in `knowledge/`:
+
+| File | Contenuto |
+|------|-----------|
+| `spid.md` | Guida completa a SPID: cos'è, come ottenerlo, identity provider |
+| `cie.md` | Guida alla CIE: richiesta, rinnovo, uso per autenticazione |
+| `inps-servizi.md` | Panoramica servizi INPS online: pensioni, NASpI, bonus |
+| `isee.md` | Guida ISEE: cos'è, come calcolarlo, documenti necessari |
+
+#### Generazione dell'Indice Vettoriale
+
+Per indicizzare la knowledge base con BGE-M3:
+
+```bash
+# 1. Assicurati che Ollama sia in esecuzione
+ollama serve
+
+# 2. Scarica il modello di embedding
+ollama pull bge-m3
+
+# 3. Genera l'indice vettoriale
+npm run build:knowledge
+```
+
+Lo script legge i file `.md` da `knowledge/`, li suddivide in chunk, genera gli embedding tramite Ollama e salva l'indice in `src/rag/knowledge_index.json`.
+
+---
+
+## 🛡️ Sicurezza AI
+
+L'architettura implementa 3 livelli di protezione:
+
+### Layer 1 — Input Guard (`src/security/inputGuard.ts`)
+- Rileva pattern di prompt injection (jailbreak, role hijacking, ignore instructions)
+- Calcola un risk score (0–1) per ogni input
+- Modalità: `allow`, `sanitize`, `block`
+
+### Layer 2 — RAG Guard (`src/security/ragGuard.ts`)
+- Ispeziona i chunk recuperati dal RAG prima di iniettarli nel prompt
+- Calcola trust score e quarantena chunk sospetti
+- Protegge contro data poisoning nei documenti
+
+### Layer 3 — Output Guard (`src/security/outputGuard.ts`)
+- Valida la risposta del modello prima di mostrarla all'utente
+- Blocca leak del system prompt, dati sensibili, o output manipolato
+
+### Configurazione
+
+Nel pannello impostazioni dell'app:
+- **Safe Mode**: attiva/disattiva tutti i layer di sicurezza
+- **Protection Level**: `standard` (bilanciato) o `strict` (massima protezione)
 
 ---
 
 ## 📁 Struttura Principale delle Cartelle
 
-Il progetto segue una netta separazione delle responsabilità tra interfaccia utente, logica di stato e persistenza dei dati:
-
 ```text
 progetto.its/
+├── knowledge/               # Knowledge base RAG (documenti .md)
+│   ├── spid.md
+│   ├── cie.md
+│   ├── inps-servizi.md
+│   └── isee.md
+├── scripts/
+│   └── buildKnowledgeIndex.ts  # Script per generazione indice vettoriale
 ├── src/
-│   ├── assets/             # Risorse statiche (immagini, loghi)
+│   ├── assets/              # Risorse statiche (immagini, loghi)
 │   ├── components/
-│   │   ├── layout/         # Componenti della shell dell'app (AppShell, Sidebar, TopBar)
-│   │   ├── ui/             # Componenti grafici primitivi (Alert, Button, Badge, StatusBadge)
-│   │   ├── dashboard/      # Sotto-componenti modulari della Home (SearchBanner, SummaryWidgets, ecc.)
-│   │   └── guida/          # Sotto-componenti della pagina di dettaglio della guida (StepList, DocumentChecklist)
+│   │   ├── layout/          # Shell dell'app (AppShell, Sidebar, TopBar)
+│   │   ├── ui/              # Componenti primitivi (Alert, Button, Badge)
+│   │   ├── dashboard/       # Sotto-componenti Home
+│   │   └── guida/           # Sotto-componenti pagina guida
 │   ├── hooks/
-│   │   └── useAppState.ts  # Hook custom che centralizza lo stato globale e le azioni di business
-│   ├── pages/              # Schermate principali (Dashboard, Servizi, Documenti, Assistente, Onboarding, ecc.)
-│   ├── repositories/       # Classi per l'interazione con il database locale (localStorage)
-│   │   ├── profileRepository.ts
-│   │   ├── percorsiRepository.ts
-│   │   ├── documentiRepository.ts
-│   │   ├── scadenzeRepository.ts
-│   │   └── chatRepository.ts
-│   ├── mockData.ts         # Dati demo iniziali caricati al primo avvio del database locale
-│   ├── types.ts            # Definizioni dei tipi TypeScript del dominio applicativo
-│   ├── App.tsx             # Componente root che gestisce il routing e la shell
-│   ├── App.css             # Stile CSS globale conforme alle linee guida di stile
-│   └── main.tsx            # Entry point dell'applicazione React
+│   │   └── useAppState.ts   # Hook centralizzato stato globale
+│   ├── pages/               # Schermate principali
+│   ├── providers/
+│   │   └── qwenProvider.ts  # Client Ollama per Qwen
+│   ├── rag/                 # Pipeline RAG locale
+│   │   ├── types.ts         # Tipi RagChunk, RetrievalResult
+│   │   ├── markdownLoader.ts # Parser file .md (build-time only)
+│   │   ├── chunker.ts       # Chunking con overlap
+│   │   ├── embedder.ts      # Client Ollama per BGE-M3
+│   │   ├── vectorStore.ts   # Store vettoriale in-memory
+│   │   ├── retriever.ts     # Dot-product similarity search
+│   │   ├── contextBuilder.ts # Formattazione contesto citato
+│   │   └── knowledge_index.json  # Indice vettoriale pre-calcolato
+│   ├── repositories/        # Persistenza locale (localStorage)
+│   ├── security/            # Layer di sicurezza AI
+│   │   ├── inputGuard.ts
+│   │   ├── ragGuard.ts
+│   │   └── outputGuard.ts
+│   ├── services/
+│   │   ├── modelRouter.ts   # Router e orchestratore AI
+│   │   ├── ragService.ts    # Servizio RAG ibrido (vector + TF-IDF)
+│   │   ├── promptBuilder.ts # Costruzione prompt sicuri
+│   │   ├── settingsService.ts # Gestione impostazioni AI
+│   │   └── intentClassifier.ts # Pre-classificazione intento
+│   ├── utils/               # Utility (sanitizzazione, trust score, routing)
+│   ├── mockData.ts          # Dati demo iniziali
+│   ├── types.ts             # Tipi TypeScript del dominio
+│   ├── App.tsx              # Componente root
+│   ├── App.css              # Stile CSS globale
+│   └── main.tsx             # Entry point React
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -69,10 +192,23 @@ Tutte le informazioni del profilo, le preferenze espresse durante l'onboarding, 
 
 ---
 
-## 🚀 Come Avviare il Progetto Locamente
+## 🚀 Come Avviare il Progetto Localmente
 
 ### Requisiti
-- Node.js (v18+) e `npm`.
+- Node.js (v18+) e `npm`
+- [Ollama](https://ollama.com/) installato e in esecuzione
+- Modelli: `qwen2-7b` e `bge-m3`
+
+### Setup Modelli AI
+
+```bash
+# Avvia Ollama
+ollama serve
+
+# Scarica i modelli necessari
+ollama pull qwen2-7b
+ollama pull bge-m3
+```
 
 ### Procedura di Avvio
 
@@ -81,13 +217,18 @@ Tutte le informazioni del profilo, le preferenze espresse durante l'onboarding, 
    npm install
    ```
 
-2. Avvia il server di sviluppo locale:
+2. Genera l'indice vettoriale RAG:
+   ```bash
+   npm run build:knowledge
+   ```
+
+3. Avvia il server di sviluppo locale:
    ```bash
    npm run dev
    ```
    *Nota: L'applicazione web sarà accessibile all'indirizzo `http://localhost:1420`.*
 
-3. Esegui la build di produzione per verificare la correttezza del codice:
+4. Esegui la build di produzione per verificare la correttezza del codice:
    ```bash
    npm run build
    ```
@@ -98,3 +239,6 @@ Tutte le informazioni del profilo, le preferenze espresse durante l'onboarding, 
 
 1. **Integrazione File System Tauri**: Migrare la scrittura dei file dei documenti e dei file JSON di configurazione dal `localStorage` alle directory protette dell'utente (`$APP_DATA_DIR`) tramite le API native Rust di Tauri.
 2. **Integrazione Geolocalizzazione Reale**: Sostituire il lookup geografico simulato con il rilevamento reale del GPS tramite plugin ufficiale Tauri Core `geolocation`, mantenendo sempre il consenso facoltativo abilitato dall'utente.
+3. **Espansione Knowledge Base**: Aggiungere guide per ulteriori servizi PA (ANPR, Agenzia Entrate, Fascicolo Sanitario Elettronico).
+4. **Re-ranking semantico**: Implementare un secondo stadio di re-ranking con cross-encoder per migliorare la precisione del retrieval.
+5. **Persistent Vector Store**: Migrare da JSON in-memory a SQLite con estensione vector per supportare knowledge base più ampie.

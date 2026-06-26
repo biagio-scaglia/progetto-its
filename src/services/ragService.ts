@@ -3,11 +3,16 @@ import { DocumentiRepository } from "../repositories/documentiRepository";
 import { ScadenzeRepository } from "../repositories/scadenzeRepository";
 import { ProfileRepository } from "../repositories/profileRepository";
 import { PercorsiRepository } from "../repositories/percorsiRepository";
+import { Retriever } from "../rag/retriever";
+import { RetrievalResult as VectorRetrievalResult } from "../rag/types";
 
+/**
+ * RAG chunk interface used throughout the app (security guards, model router, etc.)
+ */
 export interface RagChunk {
   id: string;
   sourceId: string;
-  type: "guide" | "user_document" | "user_deadline" | "user_profile";
+  type: "guide" | "knowledge" | "user_document" | "user_deadline" | "user_profile";
   title: string;
   text: string;
   hash: string;
@@ -25,7 +30,7 @@ const STOPWORDS = new Set([
 ]);
 
 export class RagService {
-  private static chunks: RagChunk[] = [];
+  private static dynamicChunks: RagChunk[] = [];
   private static documentFrequency: Record<string, number> = {};
   private static totalDocuments = 0;
 
@@ -48,14 +53,14 @@ export class RagService {
   private static tokenize(text: string): string[] {
     return text
       .toLowerCase()
-      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?\"']/g, " ")
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?\\"']/g, " ")
       .split(/\s+/)
       .map(t => t.trim())
       .filter(t => t.length > 1 && !STOPWORDS.has(t));
   }
 
   /**
-   * Refreshes the local index incrementally.
+   * Refreshes the dynamic local index incrementally (user data + mock guides).
    */
   static refreshIndex(): void {
     const newChunks: RagChunk[] = [];
@@ -189,7 +194,7 @@ export class RagService {
     }
 
     // Save chunks
-    this.chunks = newChunks;
+    this.dynamicChunks = newChunks;
     this.totalDocuments = newChunks.length;
 
     // Calculate document frequency for TF-IDF
@@ -203,10 +208,10 @@ export class RagService {
   }
 
   /**
-   * Retrieves the top-k relevant chunks based on a query using TF-IDF scoring.
+   * Searches dynamic local chunks using TF-IDF scoring (user data, guides).
    */
-  static retrieve(query: string, topK = 3): RetrievalResult[] {
-    if (this.chunks.length === 0) {
+  private static retrieveDynamic(query: string, topK = 3): RetrievalResult[] {
+    if (this.dynamicChunks.length === 0) {
       this.refreshIndex();
     }
 
@@ -215,7 +220,7 @@ export class RagService {
 
     const results: RetrievalResult[] = [];
 
-    this.chunks.forEach(chunk => {
+    this.dynamicChunks.forEach(chunk => {
       const chunkTerms = this.tokenize(chunk.text);
       const termCounts: Record<string, number> = {};
       chunkTerms.forEach(term => {
@@ -246,6 +251,64 @@ export class RagService {
   }
 
   /**
+   * Searches the static knowledge base using BGE-M3 vector embeddings via Ollama.
+   * Returns results converted to the common RetrievalResult interface.
+   */
+  private static async retrieveKnowledge(query: string, topK = 3): Promise<RetrievalResult[]> {
+    try {
+      const vectorResults: VectorRetrievalResult[] = await Retriever.searchRelevantChunks(query, { topK });
+
+      // Convert vector results to the common RetrievalResult shape
+      return vectorResults.map(vr => ({
+        chunk: {
+          id: vr.chunk.id,
+          sourceId: vr.chunk.filePath,
+          type: "knowledge" as const,
+          title: vr.chunk.sectionTitle,
+          text: vr.chunk.text,
+          hash: vr.chunk.fileHash,
+        },
+        score: vr.score,
+      }));
+    } catch (e) {
+      console.warn("[RagService] Vector retrieval failed, falling back to dynamic-only:", e);
+      return [];
+    }
+  }
+
+  /**
+   * Hybrid retrieve: combines vector-based knowledge search with dynamic TF-IDF search.
+   * Used by the model router pipeline.
+   */
+  static async retrieveHybrid(query: string, topK = 5): Promise<RetrievalResult[]> {
+    // Run dynamic (TF-IDF) search synchronously
+    const dynamicResults = this.retrieveDynamic(query, topK);
+
+    // Run vector-based knowledge search asynchronously
+    const knowledgeResults = await this.retrieveKnowledge(query, topK);
+
+    // Merge: interleave by score, deduplicate by id
+    const allResults = [...knowledgeResults, ...dynamicResults];
+    const seen = new Set<string>();
+    const deduped: RetrievalResult[] = [];
+    for (const r of allResults.sort((a, b) => b.score - a.score)) {
+      if (!seen.has(r.chunk.id)) {
+        seen.add(r.chunk.id);
+        deduped.push(r);
+      }
+    }
+
+    return deduped.slice(0, topK);
+  }
+
+  /**
+   * Synchronous retrieve: TF-IDF only (for backward compatibility and social-bypass fast paths).
+   */
+  static retrieve(query: string, topK = 3): RetrievalResult[] {
+    return this.retrieveDynamic(query, topK);
+  }
+
+  /**
    * Helper to format retrieved chunks into a single readable context string.
    */
   static buildRagContext(retrieved: RetrievalResult[]): string {
@@ -253,7 +316,11 @@ export class RagService {
     
     return retrieved
       .map((r, idx) => {
-        const typeLabel = r.chunk.type === "guide" ? "GUIDA" : "DATO_UTENTE";
+        let typeLabel = "GUIDA";
+        if (r.chunk.type === "knowledge") typeLabel = "KNOWLEDGE_BASE";
+        else if (r.chunk.type === "user_document") typeLabel = "DATO_UTENTE";
+        else if (r.chunk.type === "user_deadline") typeLabel = "DATO_UTENTE";
+        else if (r.chunk.type === "user_profile") typeLabel = "DATO_UTENTE";
         return `[Fonte ${idx + 1}: ${typeLabel} - ${r.chunk.title}] (Rilevanza: ${r.score.toFixed(3)})\n${r.chunk.text}`;
       })
       .join("\n\n");
