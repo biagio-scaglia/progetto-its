@@ -7,6 +7,10 @@ export interface AISettings {
   useQwenComplex: boolean;
   useQwenRewriting: boolean;
   modelMode: "auto" | "phi" | "qwen";
+  // Nuove impostazioni di sicurezza AI
+  safeMode: boolean;
+  protectionLevel: "standard" | "strict";
+  useQwenSecondOpinion: boolean;
 }
 
 const STORAGE_KEY = "sdit_ai_settings";
@@ -20,6 +24,9 @@ const DEFAULT_SETTINGS: AISettings = {
   useQwenComplex: true,
   useQwenRewriting: true,
   modelMode: "auto",
+  safeMode: true,
+  protectionLevel: "standard",
+  useQwenSecondOpinion: true,
 };
 
 export class SettingsService {

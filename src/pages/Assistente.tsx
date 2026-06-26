@@ -5,6 +5,7 @@ import { PaperPlaneIcon, TrashIcon } from "@radix-ui/react-icons";
 import { TTSButton } from "../components/ui/TTSButton";
 import { BRAND } from "../config/branding";
 import { AssistantMascot } from "../components/ui/AssistantMascot";
+import { SettingsService, AISettings } from "../services/settingsService";
 
 import { getFriendlyRoutingReason } from "../utils/routingReason";
 
@@ -32,6 +33,14 @@ export const Assistente: React.FC<AssistenteProps> = ({
   isAiLoading = false
 }) => {
   const [inputText, setInputText] = useState("");
+  const [safetyConfig, setSafetyConfig] = useState<AISettings>(() => SettingsService.getSettings());
+  const [showDebug, setShowDebug] = useState(false);
+
+  const handleSafetyChange = (key: keyof AISettings, value: any) => {
+    const updated = SettingsService.saveSettings({ [key]: value });
+    setSafetyConfig(updated);
+  };
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
 
@@ -165,6 +174,64 @@ export const Assistente: React.FC<AssistenteProps> = ({
             </select>
           </div>
 
+          {/* Safety Settings Dashboard */}
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", padding: "4px 10px", backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", minHeight: "36px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <input 
+                id="safe-mode-toggle"
+                type="checkbox"
+                checked={safetyConfig.safeMode}
+                onChange={e => handleSafetyChange("safeMode", e.target.checked)}
+                style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+              />
+              <label htmlFor="safe-mode-toggle" style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-primary)", cursor: "pointer", userSelect: "none" }}>
+                Safe Mode
+              </label>
+            </div>
+
+            {safetyConfig.safeMode && (
+              <>
+                <span style={{ color: "var(--color-border)" }}>|</span>
+                <select
+                  value={safetyConfig.protectionLevel}
+                  onChange={e => handleSafetyChange("protectionLevel", e.target.value)}
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    padding: "2px 6px",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "4px",
+                    backgroundColor: "var(--color-surface)",
+                    cursor: "pointer"
+                  }}
+                  aria-label="Livello di Protezione"
+                >
+                  <option value="standard">Standard</option>
+                  <option value="strict">Strict</option>
+                </select>
+
+                <span style={{ color: "var(--color-border)" }}>|</span>
+                <button
+                  type="button"
+                  onClick={() => setShowDebug(!showDebug)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: showDebug ? "var(--color-primary)" : "var(--color-text-secondary)",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    backgroundColor: showDebug ? "var(--color-primary-light)" : "transparent"
+                  }}
+                >
+                  Debug {showDebug ? "ON" : "OFF"}
+                </button>
+              </>
+            )}
+          </div>
+
           <Button 
             variant="secondary" 
             onClick={() => setShowConfirmClear(true)}
@@ -291,21 +358,23 @@ export const Assistente: React.FC<AssistenteProps> = ({
                   {renderMessageText(msg)}
 
                   {/* AI Observation Metadata Badges */}
-                  {!isUser && msg.modelloUsato && (
+                  {!isUser && (msg.modelloUsato || msg.quarantinedChunksCount || msg.outputBlocked) && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px", alignItems: "center" }}>
-                      <span 
-                        style={{
-                          fontSize: "0.7rem",
-                          fontWeight: 600,
-                          padding: "2px 6px",
-                          borderRadius: "var(--radius-sm)",
-                          backgroundColor: msg.modelloUsato === "phi" ? "var(--color-primary-light)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.1)" : "var(--color-danger-bg)",
-                          color: msg.modelloUsato === "phi" ? "var(--color-primary)" : msg.modelloUsato === "qwen" ? "rgb(124, 58, 237)" : "var(--color-danger)",
-                          border: `1px solid ${msg.modelloUsato === "phi" ? "rgba(0, 85, 179, 0.15)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.15)" : "var(--color-danger-border)"}`
-                        }}
-                      >
-                        Generato con {msg.modelloUsato === "phi" ? "Phi (Veloce)" : msg.modelloUsato === "qwen" ? "Qwen (Avanzato)" : "Errore"}
-                      </span>
+                      {msg.modelloUsato && (
+                        <span 
+                          style={{
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            padding: "2px 6px",
+                            borderRadius: "var(--radius-sm)",
+                            backgroundColor: msg.modelloUsato === "phi" ? "var(--color-primary-light)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.1)" : "var(--color-danger-bg)",
+                            color: msg.modelloUsato === "phi" ? "var(--color-primary)" : msg.modelloUsato === "qwen" ? "rgb(124, 58, 237)" : "var(--color-danger)",
+                            border: `1px solid ${msg.modelloUsato === "phi" ? "rgba(0, 85, 179, 0.15)" : msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.15)" : "var(--color-danger-border)"}`
+                          }}
+                        >
+                          Generato con {msg.modelloUsato === "phi" ? "Phi (Veloce)" : msg.modelloUsato === "qwen" ? "Qwen (Avanzato)" : "Errore"}
+                        </span>
+                      )}
 
                       {msg.ragAttivo && (
                         <span 
@@ -320,6 +389,39 @@ export const Assistente: React.FC<AssistenteProps> = ({
                           }}
                         >
                           RAG locale attivo
+                        </span>
+                      )}
+
+                      {msg.quarantinedChunksCount && msg.quarantinedChunksCount > 0 ? (
+                        <span 
+                          style={{
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            padding: "2px 6px",
+                            borderRadius: "var(--radius-sm)",
+                            backgroundColor: "rgba(245, 158, 11, 0.1)",
+                            color: "rgb(245, 158, 11)",
+                            border: "1px solid rgba(245, 158, 11, 0.2)"
+                          }}
+                          title="RAG Guard ha rimosso e messo in quarantena chunk non sicuri contenenti tentativi di override."
+                        >
+                          Contenuto sospetto filtrato ({msg.quarantinedChunksCount} chunk)
+                        </span>
+                      ) : null}
+
+                      {msg.outputBlocked && (
+                        <span 
+                          style={{
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            padding: "2px 6px",
+                            borderRadius: "var(--radius-sm)",
+                            backgroundColor: "var(--color-danger-bg)",
+                            color: "var(--color-danger)",
+                            border: "1px solid var(--color-danger-border)"
+                          }}
+                        >
+                          Blocco sicurezza attivo
                         </span>
                       )}
 
@@ -344,6 +446,33 @@ export const Assistente: React.FC<AssistenteProps> = ({
                           ?
                         </span>
                       )}
+                    </div>
+                  )}
+
+                  {/* AI Safety Debug Panel */}
+                  {showDebug && !isUser && (
+                    <div style={{
+                      marginTop: "12px",
+                      padding: "10px",
+                      backgroundColor: "var(--color-surface)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "var(--radius-sm)",
+                      fontSize: "0.75rem",
+                      fontFamily: "monospace",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                      color: "var(--color-text-secondary)"
+                    }}>
+                      <div style={{ fontWeight: "bold", borderBottom: "1px solid var(--color-border)", paddingBottom: "4px", marginBottom: "4px", color: "var(--color-dark-blue)" }}>
+                        DIAGNOSTICA SICUREZZA AI LOCALE
+                      </div>
+                      <div>Modello Usato: <strong style={{ color: "var(--color-text-primary)" }}>{msg.modelloUsato || "Non specificato"}</strong></div>
+                      <div>Motivo Routing: <span style={{ color: "var(--color-text-primary)" }}>{msg.motivoRouting || "Non specificato"}</span></div>
+                      <div>Rischio Prompt Injection: <span style={{ color: msg.inputRiskScore && msg.inputRiskScore >= 0.4 ? "var(--color-danger)" : "var(--color-success)" }}>{msg.inputRiskScore !== undefined ? `${(msg.inputRiskScore * 100).toFixed(0)}%` : "0%"}</span></div>
+                      <div>RAG Chunks Quarantined: <span style={{ color: msg.quarantinedChunksCount && msg.quarantinedChunksCount > 0 ? "var(--color-warning)" : "var(--color-text-primary)" }}>{msg.quarantinedChunksCount || 0} chunk</span></div>
+                      <div>RAG Risk Score: <span>{msg.ragRiskScore !== undefined ? `${(msg.ragRiskScore * 100).toFixed(0)}%` : "0%"}</span></div>
+                      <div>Output Bloccato: <strong style={{ color: msg.outputBlocked ? "var(--color-danger)" : "var(--color-success)" }}>{msg.outputBlocked ? "SÌ" : "NO"}</strong></div>
                     </div>
                   )}
                 </div>

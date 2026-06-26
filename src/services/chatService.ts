@@ -32,7 +32,7 @@ export class ChatService {
     }));
 
     // 4. Generate answer via local model router
-    const result = await ModelRouter.generateAnswer(updatedHistory, modelMode, inputText);
+    const result = await ModelRouter.generateAnswerSecure(updatedHistory, modelMode, inputText);
 
     // 5. Contextual app deep-linking analyzer (maintaining simulated parity)
     let linkInterno: string | undefined;
@@ -80,7 +80,11 @@ export class ChatService {
       modelloUsato: result.modelUsed,
       motivoRouting: result.reason,
       ragAttivo: result.ragActive,
-      durataMs: result.durationMs
+      durataMs: result.durationMs,
+      inputRiskScore: result.inputRiskScore,
+      ragRiskScore: result.ragRiskScore,
+      quarantinedChunksCount: result.quarantinedChunksCount,
+      outputBlocked: result.outputBlocked
     };
 
     return {

@@ -437,6 +437,79 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Sicurezza AI Locale (Defensive Layer) */}
+          <div className="card w-full mt-lg" style={{ marginTop: "var(--space-lg)", borderTop: "4px solid var(--color-warning)" }}>
+            <div className="card-header">
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <LockClosedIcon /> Sicurezza AI Locale (Defensive Layer)
+              </h3>
+            </div>
+            
+            <div className="card-body" style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", padding: "var(--space-md)" }}>
+              <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-sm)" }}>
+                Configura le barriere difensive contro attacchi di Prompt Injection, Prompt Leaking e accessi non autorizzati alle risorse locali.
+              </p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
+                <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                  <div>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Modalità Sicura (Safe Mode)</strong>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                      Abilita i moduli Input Guard, RAG Guard e Output Guard per proteggere la chat.
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={aiSettings.safeMode}
+                    onChange={e => handleAISettingChange("safeMode", e.target.checked)}
+                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  />
+                </div>
+
+                <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                  <div>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Livello di Protezione</strong>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                      Standard (consente/sanifica i rischi medi) o Strict (blocca qualsiasi rischio medio/alto).
+                    </span>
+                  </div>
+                  <select
+                    value={aiSettings.protectionLevel}
+                    onChange={e => handleAISettingChange("protectionLevel", e.target.value as any)}
+                    style={{
+                      padding: "var(--space-xs) var(--space-sm)",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      backgroundColor: "var(--color-background)",
+                      color: "var(--color-text-primary)",
+                      fontWeight: 600,
+                      cursor: "pointer"
+                    }}
+                  >
+                    <option value="standard">Standard</option>
+                    <option value="strict">Strict (Massimo)</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Second Opinion con Qwen sui rischi</strong>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                      Utilizza Qwen per riclassificare e validare input/RAG se la valutazione di base rileva anomalie.
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={aiSettings.useQwenSecondOpinion}
+                    disabled={!aiSettings.safeMode}
+                    onChange={e => handleAISettingChange("useQwenSecondOpinion", e.target.checked)}
+                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)", opacity: aiSettings.safeMode ? 1 : 0.5 }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Colonna Destra (Privacy & Consensi) */}

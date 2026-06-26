@@ -102,6 +102,11 @@ export interface Messaggio {
   motivoRouting?: string;
   ragAttivo?: boolean;
   durataMs?: number;
+  // Campi per la sicurezza AI
+  inputRiskScore?: number;
+  ragRiskScore?: number;
+  quarantinedChunksCount?: number;
+  outputBlocked?: boolean;
 }
 
 export interface ProfiloUtente {
