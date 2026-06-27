@@ -98,7 +98,7 @@ export interface Messaggio {
   linkTesto?: string;
   suggerimenti?: string[];
   // Nuovi campi per osservabilità e routing AI locale
-  modelloUsato?: "qwen" | "errore";
+  modelloUsato?: "qwen" | "errore" | "llama.cpp";
   motivoRouting?: string;
   ragAttivo?: boolean;
   durataMs?: number;
@@ -108,6 +108,8 @@ export interface Messaggio {
   quarantinedChunksCount?: number;
   outputBlocked?: boolean;
   fontiUsate?: any[];
+  // Caching Metadata
+  cacheHitType?: "none" | "exact" | "semantic";
 }
 
 export interface ProfiloUtente {

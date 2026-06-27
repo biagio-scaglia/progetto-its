@@ -7,6 +7,13 @@ export interface AISettings {
   // Nuove impostazioni di sicurezza AI
   safeMode: boolean;
   protectionLevel: "standard" | "strict";
+  // Nuove impostazioni per Llama.cpp e Caching
+  llmProvider: "ollama" | "llama.cpp";
+  llamaCppEndpoint: string;
+  enableExactCache: boolean;
+  enableSemanticCache: boolean;
+  semanticSimilarityThreshold: number;
+  cacheTtlMs: number;
 }
 
 const STORAGE_KEY = "sdit_ai_settings";
@@ -19,6 +26,12 @@ const DEFAULT_SETTINGS: AISettings = {
   useQwenRewriting: true,
   safeMode: true,
   protectionLevel: "standard",
+  llmProvider: "ollama",
+  llamaCppEndpoint: "http://localhost:8080",
+  enableExactCache: true,
+  enableSemanticCache: true,
+  semanticSimilarityThreshold: 0.85,
+  cacheTtlMs: 24 * 60 * 60 * 1000, // 24 ore
 };
 
 export class SettingsService {

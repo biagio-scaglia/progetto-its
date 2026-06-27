@@ -32,7 +32,7 @@ export class ChatService {
     const intent = IntentClassifier.classifyIntent(inputText);
 
     let finalAnswer = "";
-    let modelUsed: "phi" | "qwen" | "errore" | undefined = undefined;
+    let modelUsed: "phi" | "qwen" | "errore" | "llama.cpp" | undefined = undefined;
     let reason: string | undefined = undefined;
     let ragActive = false;
     let durationMs = 0;
@@ -41,6 +41,7 @@ export class ChatService {
     let outputBlocked = false;
     let quarantinedChunksCount = 0;
     let fontiUsate: any[] | undefined = undefined;
+    let cacheHit: "none" | "exact" | "semantic" = "none";
 
     const isSocialOrGreeting = ["greeting", "small_talk", "thanks", "farewell", "capability_question", "ambiguous"].includes(intent);
 
@@ -73,6 +74,7 @@ export class ChatService {
       quarantinedChunksCount = result.quarantinedChunksCount || 0;
       outputBlocked = result.outputBlocked || false;
       fontiUsate = result.fontiUsate;
+      cacheHit = result.cacheHitType || "none";
     } else {
       // PURE DOMAIN QUESTION
       const updatedHistory = [...history, userMessage].map(m => ({
@@ -92,6 +94,7 @@ export class ChatService {
       quarantinedChunksCount = result.quarantinedChunksCount || 0;
       outputBlocked = result.outputBlocked || false;
       fontiUsate = result.fontiUsate;
+      cacheHit = result.cacheHitType || "none";
     }
 
     // 4. Contextual app deep-linking analyzer based on the answer/query text
@@ -145,7 +148,8 @@ export class ChatService {
       ragRiskScore,
       quarantinedChunksCount,
       outputBlocked,
-      fontiUsate
+      fontiUsate,
+      cacheHitType: cacheHit
     };
 
     return {

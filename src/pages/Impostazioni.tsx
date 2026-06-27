@@ -8,6 +8,7 @@ import { GeolocationData } from "../repositories/geolocationRepository";
 import { PersonIcon, AccessibilityIcon, LockClosedIcon, InfoCircledIcon, GearIcon } from "@radix-ui/react-icons";
 import { SettingsService, AISettings } from "../services/settingsService";
 import { COPY_SETTINGS } from "../config/microcopy";
+import { CacheStore } from "../cache/cacheStore";
 
 interface ImpostazioniProps {
   profilo: ProfiloUtenteType;
@@ -455,6 +456,140 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   </select>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Integrazione Llama.cpp e Caching Locale */}
+          <div className="card w-full mt-lg" style={{ marginTop: "var(--space-lg)", borderTop: "4px solid var(--color-primary)" }}>
+            <div className="card-header">
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <GearIcon /> Caching Locale e Runtime di Inferenza
+              </h3>
+            </div>
+            
+            <div className="card-body" style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", padding: "var(--space-md)" }}>
+              <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-sm)" }}>
+                Ottimizza i tempi di risposta della chat configurando il server locale per l'inferenza e i livelli di caching locali.
+              </p>
+
+              {/* Scelta Runtime */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)", borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                <strong style={{ fontSize: "0.95rem" }}>Motore di Risposta Locale (Runtime)</strong>
+                <div style={{ display: "flex", gap: "var(--space-md)", marginTop: "4px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "0.9rem" }}>
+                    <input 
+                      type="radio" 
+                      name="llmProvider"
+                      checked={aiSettings.llmProvider === "ollama"}
+                      onChange={() => handleAISettingChange("llmProvider", "ollama")}
+                      style={{ cursor: "pointer" }}
+                    />
+                    Ollama (Default)
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "0.9rem" }}>
+                    <input 
+                      type="radio" 
+                      name="llmProvider"
+                      checked={aiSettings.llmProvider === "llama.cpp"}
+                      onChange={() => handleAISettingChange("llmProvider", "llama.cpp")}
+                      style={{ cursor: "pointer" }}
+                    />
+                    llama.cpp / llama-server
+                  </label>
+                </div>
+              </div>
+
+              {/* Endpoint llama.cpp */}
+              {aiSettings.llmProvider === "llama.cpp" && (
+                <div className="form-group" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                  <label className="form-label" htmlFor="llama-endpoint">Indirizzo Server llama.cpp</label>
+                  <input
+                    id="llama-endpoint"
+                    type="text"
+                    className="form-input"
+                    value={aiSettings.llamaCppEndpoint}
+                    onChange={e => handleAISettingChange("llamaCppEndpoint", e.target.value)}
+                    placeholder="http://localhost:8080"
+                  />
+                  <span className="form-helper">L'indirizzo di rete locale in cui è in esecuzione il comando llama-server con il flag --port.</span>
+                </div>
+              )}
+
+              {/* Exact Cache Toggle */}
+              <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                <div>
+                  <strong style={{ display: "block", fontSize: "0.95rem" }}>Cache Esatta (Exact Cache)</strong>
+                  <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                    Riusa all'istante le risposte generate per domande identiche sullo stesso contesto documentale.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={aiSettings.enableExactCache}
+                  onChange={e => handleAISettingChange("enableExactCache", e.target.checked)}
+                  className="switch-toggle"
+                />
+              </div>
+
+              {/* Semantic Cache Toggle */}
+              <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                <div>
+                  <strong style={{ display: "block", fontSize: "0.95rem" }}>Cache Semantica (Semantic Cache)</strong>
+                  <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                    Riconosce e riusa risposte a domande formulate in modo differente ma con significato simile.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={aiSettings.enableSemanticCache}
+                  onChange={e => handleAISettingChange("enableSemanticCache", e.target.checked)}
+                  className="switch-toggle"
+                />
+              </div>
+
+              {/* Semantic Threshold Slider */}
+              {aiSettings.enableSemanticCache && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)", borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <strong style={{ fontSize: "0.95rem" }}>Soglia di Similarità Semantica</strong>
+                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--color-primary)" }}>
+                      {Math.round(aiSettings.semanticSimilarityThreshold * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.0"
+                    step="0.05"
+                    value={aiSettings.semanticSimilarityThreshold}
+                    onChange={e => handleAISettingChange("semanticSimilarityThreshold", parseFloat(e.target.value))}
+                    style={{ width: "100%", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  />
+                  <span className="form-helper">Valori più alti (es. 85-90%) garantiscono un riuso sicuro per domande estremamente simili.</span>
+                </div>
+              )}
+
+              {/* Azione Pulizia Cache */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <strong style={{ display: "block", fontSize: "0.95rem" }}>Pulisci Archivio Cache</strong>
+                  <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                    Cancella tutte le risposte memorizzate localmente in memoria cache.
+                  </span>
+                </div>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => {
+                    CacheStore.invalidateAll();
+                    alert("Archivio della cache locale svuotato con successo!");
+                  }}
+                  style={{ minHeight: "36px", padding: "6px 12px", fontSize: "0.85rem" }}
+                  type="button"
+                >
+                  Svuota Cache
+                </Button>
+              </div>
+
             </div>
           </div>
         </section>

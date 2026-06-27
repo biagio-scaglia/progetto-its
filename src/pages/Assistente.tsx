@@ -496,7 +496,8 @@ export const Assistente: React.FC<AssistenteProps> = ({
                       <div style={{ fontWeight: "bold", borderBottom: "1px solid var(--color-border)", paddingBottom: "4px", marginBottom: "4px", color: "var(--color-dark-blue)" }}>
                         {COPY_DEBUG.panelTitle}
                       </div>
-                      <div>{COPY_DEBUG.engineUsed} <strong style={{ color: "var(--color-text-primary)" }}>{msg.modelloUsato === "qwen" ? COPY_ASSISTANT.engineValue : (msg.modelloUsato || COPY_DEBUG.notSpecified)}</strong></div>
+                      <div>{COPY_DEBUG.engineUsed} <strong style={{ color: "var(--color-text-primary)" }}>{msg.modelloUsato === "llama.cpp" ? "llama.cpp / llama-server" : (msg.modelloUsato === "qwen" ? COPY_ASSISTANT.engineValue : (msg.modelloUsato || COPY_DEBUG.notSpecified))}</strong></div>
+                      <div>Cache locale: <strong style={{ color: msg.cacheHitType && msg.cacheHitType !== "none" ? "var(--color-success)" : "var(--color-text-secondary)" }}>{msg.cacheHitType === "exact" ? "HIT (Esatta)" : msg.cacheHitType === "semantic" ? "HIT (Semantica)" : "MISS (Inferenza)"}</strong></div>
                       <div>{COPY_DEBUG.routingCriteria} <span style={{ color: "var(--color-text-primary)" }}>{msg.motivoRouting ? getFriendlyRoutingReason(msg.motivoRouting) : COPY_DEBUG.notSpecified}</span></div>
                       <div>{COPY_DEBUG.inputRisk} <span style={{ color: msg.inputRiskScore && msg.inputRiskScore >= 0.4 ? "var(--color-danger)" : "var(--color-success)" }}>{msg.inputRiskScore !== undefined ? `${(msg.inputRiskScore * 100).toFixed(0)}%` : "0%"}</span></div>
                       <div>{COPY_DEBUG.docsExcluded} <span style={{ color: msg.quarantinedChunksCount && msg.quarantinedChunksCount > 0 ? "var(--color-warning)" : "var(--color-text-primary)" }}>{msg.quarantinedChunksCount || 0}</span></div>

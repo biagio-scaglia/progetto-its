@@ -10,9 +10,15 @@ import { COPY_SECURITY, COPY_ERRORS } from "../config/microcopy";
 import { ContextBuilder } from "../rag/contextBuilder";
 import { extractUsedSources, formatSourcesForUi } from "../rag/citations";
 
+// Import nuovi moduli per Caching ed Inferenza
+import { ContextFingerprint } from "../rag/contextFingerprint";
+import { ExactCache } from "../cache/exactCache";
+import { SemanticCache } from "../cache/semanticCache";
+import { ProviderRouter } from "../llm/providerRouter";
+
 export interface GenerationResult {
   text: string;
-  modelUsed: "qwen" | "errore";
+  modelUsed: "qwen" | "errore" | "llama.cpp";
   reason: TechnicalRoutingReason;
   durationMs: number;
   ragActive: boolean;
@@ -22,6 +28,8 @@ export interface GenerationResult {
   quarantinedChunksCount?: number;
   outputBlocked?: boolean;
   fontiUsate?: any[];
+  // Caching Metadata
+  cacheHitType?: "none" | "exact" | "semantic";
 }
 
 export class ModelRouter {
@@ -152,16 +160,80 @@ export class ModelRouter {
       providerMessages.push({ role: "user", content: userPrompt });
     }
 
+    const systemPrompt = PromptBuilder.getQwenSystemPrompt();
+    const ragFingerprint = await ContextFingerprint.compute(retrieved.map(r => r.chunk));
+    const activeModel = settings.llmProvider === "llama.cpp" ? "llama.cpp" : settings.qwenModel;
+
+    // --- CACHE LAYER 1: EXACT CACHE LOOKUP ---
+    if (settings.enableExactCache) {
+      const exactHit = await ExactCache.find({
+        model: activeModel,
+        systemPrompt,
+        query: queryForGeneration,
+        safeMode: settings.safeMode,
+        protectionLevel: settings.protectionLevel,
+        ragFingerprint,
+        temperature: 0.2
+      });
+
+      if (exactHit) {
+        const duration = Date.now() - startTime;
+        this.logMinimalMetadata(duration, exactHit.modelUsed as any, inputRiskScore, ragRiskScore, retrieved.length, quarantinedChunksCount, false);
+        return {
+          text: exactHit.text,
+          modelUsed: exactHit.modelUsed as any,
+          reason: "qwen_generation",
+          durationMs: duration,
+          ragActive,
+          inputRiskScore,
+          ragRiskScore,
+          quarantinedChunksCount,
+          outputBlocked: false,
+          fontiUsate: exactHit.fontiUsate,
+          cacheHitType: "exact"
+        };
+      }
+    }
+
+    // --- CACHE LAYER 2: SEMANTIC CACHE LOOKUP ---
+    if (settings.enableSemanticCache) {
+      const semanticHit = await SemanticCache.find(queryForGeneration, {
+        model: activeModel,
+        systemPrompt,
+        safeMode: settings.safeMode,
+        protectionLevel: settings.protectionLevel,
+        ragFingerprint,
+        threshold: settings.semanticSimilarityThreshold
+      });
+
+      if (semanticHit) {
+        const duration = Date.now() - startTime;
+        this.logMinimalMetadata(duration, semanticHit.modelUsed as any, inputRiskScore, ragRiskScore, retrieved.length, quarantinedChunksCount, false);
+        return {
+          text: semanticHit.text,
+          modelUsed: semanticHit.modelUsed as any,
+          reason: "qwen_generation",
+          durationMs: duration,
+          ragActive,
+          inputRiskScore,
+          ragRiskScore,
+          quarantinedChunksCount,
+          outputBlocked: false,
+          fontiUsate: semanticHit.fontiUsate,
+          cacheHitType: "semantic"
+        };
+      }
+    }
+
     let finalAnswer = "";
-    let modelUsed: "qwen" | "errore" = "errore";
+    let modelUsed: "qwen" | "errore" | "llama.cpp" = "errore";
     let finalReason: TechnicalRoutingReason = "qwen_generation";
 
     try {
-      console.log(`[ModelRouter] Executing local Qwen model (${settings.qwenModel})...`);
-      const systemPrompt = PromptBuilder.getQwenSystemPrompt();
-      const { text } = await QwenProvider.generateWithQwen(providerMessages, { systemPrompt });
+      console.log(`[ModelRouter] Executing local LLM via ProviderRouter (active provider: ${settings.llmProvider})...`);
+      const { text, providerUsed } = await ProviderRouter.generate(providerMessages, { systemPrompt });
       finalAnswer = text;
-      modelUsed = "qwen";
+      modelUsed = providerUsed === "llama.cpp" ? "llama.cpp" : "qwen";
 
       // 6. Layer 5: Output Guard
       if (settings.safeMode) {
@@ -188,6 +260,28 @@ export class ModelRouter {
           .trim();
       }
 
+      // --- SAVE IN CACHES ---
+      if (!outputBlocked) {
+        const responseToCache = { text: cleanAnswer, modelUsed, fontiUsate };
+        const cacheMetadata = {
+          model: activeModel,
+          systemPrompt,
+          query: queryForGeneration,
+          safeMode: settings.safeMode,
+          protectionLevel: settings.protectionLevel,
+          ragFingerprint,
+          temperature: 0.2,
+          ttlMs: settings.cacheTtlMs
+        };
+
+        if (settings.enableExactCache) {
+          await ExactCache.store(cacheMetadata, responseToCache);
+        }
+        if (settings.enableSemanticCache) {
+          await SemanticCache.store(queryForGeneration, responseToCache, cacheMetadata);
+        }
+      }
+
       return {
         text: cleanAnswer,
         modelUsed,
@@ -198,7 +292,8 @@ export class ModelRouter {
         ragRiskScore,
         quarantinedChunksCount,
         outputBlocked,
-        fontiUsate
+        fontiUsate,
+        cacheHitType: "none"
       };
 
     } catch (finalError: any) {
