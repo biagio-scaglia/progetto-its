@@ -54,23 +54,24 @@ if %errorlevel% neq 0 (
     goto start_frontend
 )
 
-echo [Ollama] Connessione al server Ollama...
+echo [Ollama] Abilitazione connettivita (CORS) per l'interfaccia utente...
+taskkill /f /im ollama.exe >nul 2>&1
+taskkill /f /im "ollama app.exe" >nul 2>&1
+
+set OLLAMA_ORIGINS=*
+echo [Ollama] Avvio del server con CORS sbloccato...
+start "Ollama Server" /min ollama serve
+echo [Ollama] In attesa del caricamento (5 secondi)...
+timeout /t 5 >nul
+
 curl -s -f http://localhost:11434/api/tags >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [Ollama] Il server Ollama non e attivo. Tentativo di avvio automatico...
-    start "Ollama Server" /min ollama serve
-    echo [Ollama] In attesa del caricamento (5 secondi)...
-    timeout /t 5 >nul
-    
-    curl -s -f http://localhost:11434/api/tags >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo [Ollama] ATTENZIONE: Impossibile contattare Ollama su http://localhost:11434.
-        echo          Verifica che il software Ollama sia avviato.
-        echo.
-        echo          Premere un tasto per continuare comunque l'avvio...
-        pause >nul
-        goto start_frontend
-    )
+    echo [Ollama] ATTENZIONE: Impossibile contattare Ollama su http://localhost:11434.
+    echo          Verifica che il software Ollama sia avviato.
+    echo.
+    echo          Premere un tasto per continuare comunque l'avvio...
+    pause >nul
+    goto start_frontend
 )
 echo [Ollama] Server attivo e raggiungibile.
 echo.

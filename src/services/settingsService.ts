@@ -14,7 +14,7 @@ const STORAGE_KEY = "sdit_ai_settings";
 const DEFAULT_SETTINGS: AISettings = {
   ollamaEndpoint: "http://localhost:11434",
   qwenModel: "qwen2-7b",
-  qwenTimeout: 30000,
+  qwenTimeout: 90000,
   embeddingModel: "bge-m3",
   useQwenRewriting: true,
   safeMode: true,
@@ -31,6 +31,12 @@ export class SettingsService {
       }
       
       const parsed = JSON.parse(stored);
+      // Migrate old 30s timeout to 90s to prevent local execution timeouts
+      if (parsed.qwenTimeout === 30000 || !parsed.qwenTimeout) {
+        parsed.qwenTimeout = 90000;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      }
+      
       // Merge with defaults to ensure compatibility if fields are missing
       return {
         ...DEFAULT_SETTINGS,
