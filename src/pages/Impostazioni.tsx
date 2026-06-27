@@ -276,7 +276,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   type="checkbox" 
                   checked={reducedMotion} 
                   onChange={e => setReducedMotion(e.target.checked)}
-                  style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  className="switch-toggle"
                   aria-label="Attiva riduzione movimento"
                 />
               </div>
@@ -292,7 +292,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   type="checkbox" 
                   checked={largeText} 
                   onChange={e => handleLargeTextToggle(e.target.checked)}
-                  style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  className="switch-toggle"
                   aria-label="Attiva caratteri ingranditi"
                 />
               </div>
@@ -308,7 +308,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   type="checkbox" 
                   checked={enableTTS} 
                   onChange={e => handleTTSToggle(e.target.checked)}
-                  style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  className="switch-toggle"
                   aria-label="Attiva lettura vocale"
                 />
               </div>
@@ -324,7 +324,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   type="checkbox" 
                   checked={autoSave} 
                   onChange={e => setAutoSave(e.target.checked)}
-                  style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                  className="switch-toggle"
                   aria-label="Attiva salvataggio bozze automatico"
                 />
               </div>
@@ -394,7 +394,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                     type="checkbox"
                     checked={aiSettings.useQwenRewriting}
                     onChange={e => handleAISettingChange("useQwenRewriting", e.target.checked)}
-                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                    className="switch-toggle"
                   />
                 </div>
               </div>
@@ -426,7 +426,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                     type="checkbox"
                     checked={aiSettings.safeMode}
                     onChange={e => handleAISettingChange("safeMode", e.target.checked)}
-                    style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                    className="switch-toggle"
                   />
                 </div>
 
@@ -496,7 +496,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                         onRevocaGeolocalizzazione();
                       }
                     }}
-                    style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                    className="switch-toggle"
                   />
                   <label htmlFor="opt-geoloc" style={{ fontWeight: 600, color: "var(--color-text-primary)", cursor: "pointer" }}>
                     Abilita Geolocalizzazione

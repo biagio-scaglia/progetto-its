@@ -163,7 +163,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                 type="checkbox"
                 checked={safetyConfig.safeMode}
                 onChange={e => handleSafetyChange("safeMode", e.target.checked)}
-                style={{ width: "14px", height: "14px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                className="switch-toggle"
               />
               <label htmlFor="safe-mode-toggle" style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-primary)", cursor: "pointer", userSelect: "none" }}>
                 {COPY_ASSISTANT.protectionToggleLabel}
@@ -270,6 +270,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
             return (
               <div 
                 key={msg.id}
+                className="message-slide-in"
                 style={{ 
                   display: "flex", 
                   alignItems: "center", 
@@ -370,28 +371,17 @@ export const Assistente: React.FC<AssistenteProps> = ({
                         gap: "var(--space-xs)"
                       }}>
                         {msg.fontiUsate.map((source: any) => (
-                          <span
-                            key={source.visualId}
-                            title={`[Fonte ${source.visualId}] ${source.fileName} - ${source.section}\n\nEstratto:\n"${source.fullText}"`}
-                            style={{
-                              fontSize: "0.72rem",
-                              fontWeight: 600,
-                              padding: "4px 8px",
-                              borderRadius: "var(--radius-sm)",
-                              backgroundColor: "var(--color-primary-light)",
-                              color: "var(--color-primary)",
-                              border: "1px solid var(--color-border)",
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center"
-                            }}
-                            onClick={() => {
-                              alert(`[Fonte ${source.visualId}] ${source.fileName}\nSezione: ${source.section}\n\nEstratto dai tuoi documenti:\n"${source.fullText}"`);
-                            }}
-                          >
-                            [{source.visualId}] {source.fileName}
-                          </span>
-                        ))}
+                           <span
+                             key={source.visualId}
+                             className="source-badge"
+                             title={`[Fonte ${source.visualId}] ${source.fileName} - ${source.section}\n\nEstratto:\n"${source.fullText}"`}
+                             onClick={() => {
+                               alert(`[Fonte ${source.visualId}] ${source.fileName}\nSezione: ${source.section}\n\nEstratto dai tuoi documenti:\n"${source.fullText}"`);
+                             }}
+                           >
+                             [{source.visualId}] {source.fileName}
+                           </span>
+                         ))}
                       </div>
                     </div>
                   )}
