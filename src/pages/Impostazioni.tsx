@@ -7,6 +7,7 @@ import { contieneEmoji } from "../repositories/profileRepository";
 import { GeolocationData } from "../repositories/geolocationRepository";
 import { PersonIcon, AccessibilityIcon, LockClosedIcon, InfoCircledIcon, GearIcon } from "@radix-ui/react-icons";
 import { SettingsService, AISettings } from "../services/settingsService";
+import { COPY_SETTINGS } from "../config/microcopy";
 
 interface ImpostazioniProps {
   profilo: ProfiloUtenteType;
@@ -122,7 +123,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
       // Aggiorna lo stato tramite hook
       onUpdate(updatedProfile);
       
-      setSuccessMessage("Modifiche salvate con successo nel database locale.");
+      setSuccessMessage(COPY_SETTINGS.saveSuccess);
       
       // Nascondi il banner di successo dopo 3 secondi
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -149,7 +150,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
       )}
 
       {errorMessage && (
-        <Alert variant="error" title="Errore di validazione">
+        <Alert variant="error" title={COPY_SETTINGS.saveErrorTitle}>
           {errorMessage}
         </Alert>
       )}
@@ -161,13 +162,13 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
           <div className="card w-full mb-lg">
             <div className="card-header">
               <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)", display: "flex", alignItems: "center", gap: "8px" }}>
-                <PersonIcon /> Profilo Utente (Dati per compilazione locale)
+                <PersonIcon /> {COPY_SETTINGS.profileSectionTitle}
               </h3>
             </div>
             
             <div className="card-body">
               <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-md)" }}>
-                Questi dati sono memorizzati esclusivamente sul tuo computer e vengono utilizzati all'interno dell'applicazione di orientamento.
+                {COPY_SETTINGS.profileDescription}
               </p>
               
               <form onSubmit={handleSave}>
@@ -247,7 +248,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
 
                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "var(--space-md)" }}>
                   <Button type="submit" disabled={saving}>
-                    {saving ? "Salvataggio..." : "Salva Dati Locali"}
+                    {saving ? COPY_SETTINGS.savingButton : COPY_SETTINGS.saveButton}
                   </Button>
                 </div>
               </form>
@@ -298,9 +299,9 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
 
               <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-md)" }}>
                 <div>
-                  <strong style={{ display: "block", fontSize: "0.95rem" }}>Abilita Lettura Vocale (TTS)</strong>
+                  <strong style={{ display: "block", fontSize: "0.95rem" }}>{COPY_SETTINGS.ttsLabel}</strong>
                   <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                    Mostra i pulsanti per ascoltare la lettura vocale dei contenuti principali dell'applicazione.
+                    {COPY_SETTINGS.ttsDesc}
                   </span>
                 </div>
                 <input 
@@ -335,18 +336,18 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
           <div className="card w-full mt-lg" style={{ marginTop: "var(--space-lg)" }}>
             <div className="card-header">
               <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)", display: "flex", alignItems: "center", gap: "8px" }}>
-                <GearIcon /> Configurazione Modelli AI Locali (Ollama)
+                <GearIcon /> {COPY_SETTINGS.engineSectionTitle}
               </h3>
             </div>
             
             <div className="card-body" style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", padding: "var(--space-md)" }}>
               <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-sm)" }}>
-                Configura i parametri del server Ollama locale e i modelli installati sul tuo computer.
+                {COPY_SETTINGS.engineDescription}
               </p>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)" }}>
                 <div className="form-group" style={{ gridColumn: "span 2" }}>
-                  <label className="form-label" htmlFor="ai-endpoint">Endpoint API Ollama</label>
+                  <label className="form-label" htmlFor="ai-endpoint">{COPY_SETTINGS.engineEndpointLabel}</label>
                   <input
                     id="ai-endpoint"
                     type="text"
@@ -358,7 +359,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                 </div>
 
                 <div className="form-group" style={{ gridColumn: "span 2" }}>
-                  <label className="form-label" htmlFor="ai-qwen-model">Nome Modello Qwen</label>
+                  <label className="form-label" htmlFor="ai-qwen-model">{COPY_SETTINGS.engineModelLabel}</label>
                   <input
                     id="ai-qwen-model"
                     type="text"
@@ -370,7 +371,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                 </div>
 
                 <div className="form-group" style={{ gridColumn: "span 2" }}>
-                  <label className="form-label" htmlFor="ai-qwen-timeout">Timeout Qwen (millisecondi)</label>
+                  <label className="form-label" htmlFor="ai-qwen-timeout">{COPY_SETTINGS.engineTimeoutLabel}</label>
                   <input
                     id="ai-qwen-timeout"
                     type="number"
@@ -384,9 +385,9 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
               <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: "var(--space-md)", marginTop: "var(--space-md)" }}>
                 <div className="flex justify-between items-center">
                   <div>
-                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Usa Qwen per query rewriting RAG</strong>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>{COPY_SETTINGS.engineRewriteLabel}</strong>
                     <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                      Utilizza Qwen per ottimizzare le ricerche nel database RAG locale prima della risposta.
+                      {COPY_SETTINGS.engineRewriteDesc}
                     </span>
                   </div>
                   <input
@@ -404,21 +405,21 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
           <div className="card w-full mt-lg" style={{ marginTop: "var(--space-lg)", borderTop: "4px solid var(--color-warning)" }}>
             <div className="card-header">
               <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-dark-blue)", display: "flex", alignItems: "center", gap: "8px" }}>
-                <LockClosedIcon /> Sicurezza AI Locale (Defensive Layer)
+                <LockClosedIcon /> {COPY_SETTINGS.securitySectionTitle}
               </h3>
             </div>
             
             <div className="card-body" style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", padding: "var(--space-md)" }}>
               <p style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "var(--space-sm)" }}>
-                Configura le barriere difensive contro attacchi di Prompt Injection, Prompt Leaking e accessi non autorizzati alle risorse locali.
+                {COPY_SETTINGS.securityDescription}
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
                 <div className="flex justify-between items-center" style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "var(--space-sm)" }}>
                   <div>
-                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Modalità Sicura (Safe Mode)</strong>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>{COPY_SETTINGS.securityToggleLabel}</strong>
                     <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                      Abilita i moduli Input Guard, RAG Guard e Output Guard per proteggere la chat.
+                      {COPY_SETTINGS.securityToggleDesc}
                     </span>
                   </div>
                   <input
@@ -431,9 +432,9 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
 
                 <div className="flex justify-between items-center">
                   <div>
-                    <strong style={{ display: "block", fontSize: "0.95rem" }}>Livello di Protezione</strong>
+                    <strong style={{ display: "block", fontSize: "0.95rem" }}>{COPY_SETTINGS.protectionLevelLabel}</strong>
                     <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                      Standard (consente/sanifica i rischi medi) o Strict (blocca qualsiasi rischio medio/alto).
+                      {COPY_SETTINGS.protectionLevelDesc}
                     </span>
                   </div>
                   <select
@@ -449,8 +450,8 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                       cursor: "pointer"
                     }}
                   >
-                    <option value="standard">Standard</option>
-                    <option value="strict">Strict (Massimo)</option>
+                    <option value="standard">{COPY_SETTINGS.protectionLevelNormal}</option>
+                    <option value="strict">{COPY_SETTINGS.protectionLevelMax}</option>
                   </select>
                 </div>
               </div>
@@ -469,9 +470,9 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
             <div className="card-body" style={{ padding: "var(--space-md)", fontSize: "0.85rem", display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
               
               <div style={{ padding: "var(--space-sm)", backgroundColor: "var(--color-background)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}>
-                <span style={{ color: "var(--color-text-secondary)", display: "block", fontSize: "0.75rem" }}>Persistenza database:</span>
+                <span style={{ color: "var(--color-text-secondary)", display: "block", fontSize: "0.75rem" }}>{COPY_SETTINGS.dataStatusLabel}</span>
                 <strong style={{ display: "block", color: "var(--color-success)", marginTop: "2px" }}>
-                  Archiviazione Locale Offline (Attiva)
+                  {COPY_SETTINGS.dataStatusValue}
                 </strong>
               </div>
 
@@ -480,7 +481,7 @@ export const Impostazioni: React.FC<ImpostazioniProps> = ({
                   Geolocalizzazione Opzionale
                 </strong>
                 <p style={{ color: "var(--color-text-secondary)", lineHeight: "1.4", marginBottom: "var(--space-sm)" }}>
-                  Consente all'app di ricavare coordinate approssimative lato client per determinare l'ufficio comunale e lo sportello INPS piu' vicino.
+                  {COPY_SETTINGS.geolocDesc}
                 </p>
                 
                 <div className="flex items-center gap-sm">

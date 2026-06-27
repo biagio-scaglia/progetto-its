@@ -1,4 +1,5 @@
 import { computeRiskScore } from "../utils/trustScore";
+import { COPY_SECURITY } from "../config/microcopy";
 
 export interface OutputGuardResult {
   isValid: boolean;
@@ -64,14 +65,14 @@ export class OutputGuard {
         const cleanUrl = url.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?\"']/g, "");
         if (!context.includes(cleanUrl)) {
           // Sanitization: remove the hallucinated URL to prevent exfiltration
-          sanitizedOutput = sanitizedOutput.replace(url, "[Link Rimosso per Sicurezza]");
+          sanitizedOutput = sanitizedOutput.replace(url, COPY_SECURITY.linkRemoved);
           reasons.push(`Rimossa URL non verificata nel contesto locale: ${cleanUrl}`);
         }
       }
     }
 
     if (!isValid) {
-      sanitizedOutput = "Nota di sicurezza: La risposta generata dal modello locale ha fallito i controlli di sicurezza (Output Guard) ed è stata bloccata per prevenire la divulgazione di informazioni sensibili.";
+      sanitizedOutput = COPY_SECURITY.outputBlocked;
     }
 
     return {

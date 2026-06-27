@@ -107,6 +107,7 @@ export interface Messaggio {
   ragRiskScore?: number;
   quarantinedChunksCount?: number;
   outputBlocked?: boolean;
+  fontiUsate?: any[];
 }
 
 export interface ProfiloUtente {

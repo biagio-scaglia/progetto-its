@@ -1,4 +1,5 @@
 import { SettingsService } from "../services/settingsService";
+import { COPY_ERRORS } from "../config/microcopy";
 
 export interface ProviderOptions {
   temperature?: number;
@@ -54,9 +55,9 @@ export class QwenProvider {
       if (!response.ok) {
         const errorText = await response.text();
         if (response.status === 404 || errorText.includes("not found")) {
-          throw new Error(`MODEL_NOT_FOUND: Il modello Qwen '${model}' non è installato in Ollama. Esegui 'ollama pull ${model}' nel terminale.`);
+          throw new Error(COPY_ERRORS.modelNotFound(model));
         }
-        throw new Error(`API_ERROR: Risposta del server non valida (${response.status}): ${errorText}`);
+        throw new Error(COPY_ERRORS.apiError(response.status));
       }
 
       const data = await response.json();
@@ -66,15 +67,15 @@ export class QwenProvider {
       clearTimeout(id);
 
       if (e.name === "AbortError") {
-        throw new Error(`TIMEOUT: Richiesta a Qwen interrotta dopo ${timeoutMs}ms.`);
+        throw new Error(COPY_ERRORS.timeout);
       }
 
-      if (e.message?.startsWith("MODEL_NOT_FOUND") || e.message?.startsWith("API_ERROR")) {
+      if (e.message?.startsWith("Il motore di risposta")) {
         throw e;
       }
 
       // Ollama service offline or CORS issues
-      throw new Error(`OFFLINE: Impossibile connettersi a Ollama su ${endpoint}. Assicurati che l'applicazione Ollama sia in esecuzione.`);
+      throw new Error(COPY_ERRORS.offline);
     }
   }
 }

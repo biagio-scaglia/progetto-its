@@ -6,12 +6,18 @@ export interface MarkdownSection {
 
 export interface RagChunk {
   id: string;
-  filePath: string;
-  sectionTitle: string;
-  fileHash: string;
-  chunkIndex: number;
+  filePath: string; // matches sourceId for dynamic chunks
+  sectionTitle: string; // matches title for dynamic chunks
+  fileHash: string; // matches hash for dynamic chunks
+  chunkIndex?: number;
   text: string;
   embedding?: number[];
+  type?: "guide" | "knowledge" | "user_document" | "user_deadline" | "user_profile";
+  
+  // Backward-compatibility aliases
+  sourceId?: string;
+  title?: string;
+  hash?: string;
 }
 
 export interface VectorStoreData {
@@ -26,4 +32,5 @@ export interface RetrievalResult {
 export interface RAGOptions {
   topK?: number;
   similarityThreshold?: number;
+  maxPerDocument?: number;
 }

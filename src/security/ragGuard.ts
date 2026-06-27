@@ -42,8 +42,8 @@ export class RagGuard {
       const riskScore = Math.max(riskAnalysis.score, cleanRiskAnalysis.score);
 
       const trustInfo = computeChunkTrust({
-        source: chunk.type,
-        type: chunk.type
+        source: chunk.type || "",
+        type: chunk.type || ""
       });
 
       const chunkReasons: string[] = [];

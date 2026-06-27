@@ -23,6 +23,7 @@ import { useAppState } from "./hooks/useAppState";
 
 // Import branding config
 import { BRAND } from "./config/branding";
+import { COPY_PAGES } from "./config/microcopy";
 
 /**
  * Componente principale dell'applicazione (Root Router & Layout).
@@ -157,9 +158,9 @@ function App() {
       case "scadenze":
         return { title: "Date e Scadenze Utili", subtitle: "Promemoria per procedimenti ed adempimenti" };
       case "impostazioni":
-        return { title: "Opzioni e Profilo Locale", subtitle: "Configura il comportamento dell'applicazione" };
+        return { title: COPY_PAGES.settingsTitle, subtitle: COPY_PAGES.settingsSubtitle };
       case "profilo":
-        return { title: "Profilo Utente Locale", subtitle: "Informazioni utente e consensi memorizzati nel dispositivo" };
+        return { title: COPY_PAGES.profileTitle, subtitle: COPY_PAGES.profileSubtitle };
       default:
         return { title: BRAND.name, subtitle: BRAND.tagline };
     }

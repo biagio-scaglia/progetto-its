@@ -4,24 +4,11 @@ import { ScadenzeRepository } from "../repositories/scadenzeRepository";
 import { ProfileRepository } from "../repositories/profileRepository";
 import { PercorsiRepository } from "../repositories/percorsiRepository";
 import { Retriever } from "../rag/retriever";
-import { RetrievalResult as VectorRetrievalResult } from "../rag/types";
-
-/**
- * RAG chunk interface used throughout the app (security guards, model router, etc.)
- */
-export interface RagChunk {
-  id: string;
-  sourceId: string;
-  type: "guide" | "knowledge" | "user_document" | "user_deadline" | "user_profile";
-  title: string;
-  text: string;
-  hash: string;
-}
-
-export interface RetrievalResult {
-  chunk: RagChunk;
-  score: number;
-}
+import { RagChunk, RetrievalResult } from "../rag/types";
+export type { RagChunk, RetrievalResult };
+import { COPY_RAG_CONTEXT } from "../config/microcopy";
+import { deduplicateChunks } from "../rag/deduplicate";
+import { selectDiverseSources } from "../rag/scoring";
 
 // Simple list of Italian stopwords to clean terms and improve matching
 const STOPWORDS = new Set([
@@ -66,11 +53,27 @@ export class RagService {
     const newChunks: RagChunk[] = [];
     const seenHashes = new Set<string>();
 
-    const addChunk = (chunk: Omit<RagChunk, "hash">) => {
-      const hash = this.calculateStringHash(chunk.text);
-      if (!seenHashes.has(hash)) {
-        seenHashes.add(hash);
-        newChunks.push({ ...chunk, hash });
+    const addChunk = (chunk: {
+      id: string;
+      sourceId: string;
+      type: "guide" | "knowledge" | "user_document" | "user_deadline" | "user_profile";
+      title: string;
+      text: string;
+    }) => {
+      const fileHash = this.calculateStringHash(chunk.text);
+      if (!seenHashes.has(fileHash)) {
+        seenHashes.add(fileHash);
+        newChunks.push({
+          id: chunk.id,
+          filePath: chunk.sourceId,
+          sectionTitle: chunk.title,
+          fileHash,
+          text: chunk.text,
+          type: chunk.type,
+          hash: fileHash,
+          title: chunk.title,
+          sourceId: chunk.sourceId
+        });
       }
     };
 
@@ -256,16 +259,15 @@ export class RagService {
    */
   private static async retrieveKnowledge(query: string, topK = 3): Promise<RetrievalResult[]> {
     try {
-      const vectorResults: VectorRetrievalResult[] = await Retriever.searchRelevantChunks(query, { topK });
+      const vectorResults = await Retriever.searchRelevantChunks(query, { topK });
 
-      // Convert vector results to the common RetrievalResult shape
+      // Convert vector results to the common RetrievalResult shape with both primary and alias fields
       return vectorResults.map(vr => ({
         chunk: {
-          id: vr.chunk.id,
+          ...vr.chunk,
           sourceId: vr.chunk.filePath,
           type: "knowledge" as const,
           title: vr.chunk.sectionTitle,
-          text: vr.chunk.text,
           hash: vr.chunk.fileHash,
         },
         score: vr.score,
@@ -278,27 +280,25 @@ export class RagService {
 
   /**
    * Hybrid retrieve: combines vector-based knowledge search with dynamic TF-IDF search.
-   * Used by the model router pipeline.
+   * Applies deduplication and diverse source selection.
    */
   static async retrieveHybrid(query: string, topK = 5): Promise<RetrievalResult[]> {
-    // Run dynamic (TF-IDF) search synchronously
-    const dynamicResults = this.retrieveDynamic(query, topK);
+    // Run dynamic (TF-IDF) search synchronously (higher topK pool for balance)
+    const dynamicResults = this.retrieveDynamic(query, topK * 2);
 
-    // Run vector-based knowledge search asynchronously
-    const knowledgeResults = await this.retrieveKnowledge(query, topK);
+    // Run vector-based knowledge search asynchronously (higher topK pool for balance)
+    const knowledgeResults = await this.retrieveKnowledge(query, topK * 2);
 
-    // Merge: interleave by score, deduplicate by id
-    const allResults = [...knowledgeResults, ...dynamicResults];
-    const seen = new Set<string>();
-    const deduped: RetrievalResult[] = [];
-    for (const r of allResults.sort((a, b) => b.score - a.score)) {
-      if (!seen.has(r.chunk.id)) {
-        seen.add(r.chunk.id);
-        deduped.push(r);
-      }
-    }
+    // Merge: interleave by score
+    const allResults = [...knowledgeResults, ...dynamicResults].sort((a, b) => b.score - a.score);
 
-    return deduped.slice(0, topK);
+    // 1. Deduplicate chunks
+    const deduplicated = deduplicateChunks(allResults);
+
+    // 2. Select diverse sources (max 2 per document/source)
+    const diverse = selectDiverseSources(deduplicated, topK, 2);
+
+    return diverse;
   }
 
   /**
@@ -312,16 +312,16 @@ export class RagService {
    * Helper to format retrieved chunks into a single readable context string.
    */
   static buildRagContext(retrieved: RetrievalResult[]): string {
-    if (retrieved.length === 0) return "Nessuna guida o dato locale correlato trovato.";
+    if (retrieved.length === 0) return COPY_RAG_CONTEXT.noContextFound;
     
     return retrieved
       .map((r, idx) => {
-        let typeLabel = "GUIDA";
-        if (r.chunk.type === "knowledge") typeLabel = "KNOWLEDGE_BASE";
-        else if (r.chunk.type === "user_document") typeLabel = "DATO_UTENTE";
-        else if (r.chunk.type === "user_deadline") typeLabel = "DATO_UTENTE";
-        else if (r.chunk.type === "user_profile") typeLabel = "DATO_UTENTE";
-        return `[Fonte ${idx + 1}: ${typeLabel} - ${r.chunk.title}] (Rilevanza: ${r.score.toFixed(3)})\n${r.chunk.text}`;
+        let typeLabel: string = COPY_RAG_CONTEXT.guideLabel;
+        if (r.chunk.type === "knowledge") typeLabel = COPY_RAG_CONTEXT.knowledgeLabel;
+        else if (r.chunk.type === "user_document") typeLabel = COPY_RAG_CONTEXT.userDataLabel;
+        else if (r.chunk.type === "user_deadline") typeLabel = COPY_RAG_CONTEXT.userDataLabel;
+        else if (r.chunk.type === "user_profile") typeLabel = COPY_RAG_CONTEXT.userDataLabel;
+        return `[Fonte ${idx + 1}: ${typeLabel} - ${r.chunk.title}]\n${r.chunk.text}`;
       })
       .join("\n\n");
   }

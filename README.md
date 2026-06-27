@@ -97,6 +97,19 @@ npm run build:knowledge
 
 Lo script legge i file `.md` da `knowledge/`, li suddivide in chunk, genera gli embedding tramite Ollama e salva l'indice in `src/rag/knowledge_index.json`.
 
+> [!NOTE]
+> **Gestione Indice Vettoriale (Housekeeping)**:
+> Il file `knowledge_index.json` contenente le coordinate dei vettori float è escluso dal controllo versione Git. Al primo avvio, l'esecuzione di `npm install` attiva automaticamente un lifecycle script (`prepare`) che genera un file segnaposto vuoto `{ "chunks": [] }`. Questo consente il bootstrap e la compilazione immediata del progetto offline e senza Ollama in esecuzione.
+
+#### Pipeline di Retrieval Avanzata (Multi-Source & Citations)
+
+Il recupero dei documenti (RAG ibrido statico + dinamico) viene filtrato ed ottimizzato tramite quattro stadi principali:
+1. **Soglia di Punteggio (Score Threshold)**: Esclusione dei frammenti irrilevanti (soglia `0.30` per vector store).
+2. **Deduplica Chunk**: Rimozione di chunk duplicati o quasi identici basandosi su cosine similarity dell'embedding (`> 0.88`) o su Jaccard text overlap (`>= 0.40`).
+3. **Bilanciamento Fonti (Diversity)**: Limitazione a massimo `2` chunk dallo stesso file per evitare la monopolizzazione del contesto e forzare la diversificazione delle fonti.
+4. **Citazioni Inline Grounded**: Il modello Qwen riceve un contesto strutturato con blocchi numerati `[SOURCE N]` ed è istruito a citare inline con la notazione `[Fonte N]`. In caso di dati insufficienti, il sistema restituisce in automatico una formula di no-answer standard.
+5. **Estrazione Fonti in UI**: L'app esegue il parsing della risposta dell'AI ed estrae le sole fonti realmente citate, mostrandole come badge interattivi cliccabili in chat, completi di preview del testo di origine.
+
 ---
 
 ## 🛡️ Sicurezza AI
@@ -129,6 +142,8 @@ Nel pannello impostazioni dell'app:
 
 ```text
 progetto.its/
+├── docs/                    # Documentazione di progetto
+│   └── copy-guidelines.md   # Linee guida per il micro-copy e glossario termini vietati
 ├── knowledge/               # Knowledge base RAG (documenti .md)
 │   ├── spid.md
 │   ├── cie.md
@@ -143,6 +158,9 @@ progetto.its/
 │   │   ├── ui/              # Componenti primitivi (Alert, Button, Badge)
 │   │   ├── dashboard/       # Sotto-componenti Home
 │   │   └── guida/           # Sotto-componenti pagina guida
+│   ├── config/
+│   │   ├── branding.ts      # Configurazione branding
+│   │   └── microcopy.ts     # Single source of truth per testi user-facing
 │   ├── hooks/
 │   │   └── useAppState.ts   # Hook centralizzato stato globale
 │   ├── pages/               # Schermate principali
@@ -154,9 +172,11 @@ progetto.its/
 │   │   ├── chunker.ts       # Chunking con overlap
 │   │   ├── embedder.ts      # Client Ollama per BGE-M3
 │   │   ├── vectorStore.ts   # Store vettoriale in-memory
-│   │   ├── retriever.ts     # Dot-product similarity search
-│   │   ├── contextBuilder.ts # Formattazione contesto citato
-│   │   └── knowledge_index.json  # Indice vettoriale pre-calcolato
+│   │   ├── retriever.ts     # Dot-product similarity search con filtri e bilanciamento
+│   │   ├── contextBuilder.ts # Formattazione contesto citato (SOURCE N)
+│   │   ├── deduplicate.ts   # Deduplica chunk (Cosine + Jaccard)
+│   │   ├── scoring.ts       # Filtro punteggio e selezione diversificata (diversity)
+│   │   └── citations.ts     # Parsing citazioni [Fonte N] ed estrazione UI
 │   ├── repositories/        # Persistenza locale (localStorage)
 │   ├── security/            # Layer di sicurezza AI
 │   │   ├── inputGuard.ts
@@ -165,7 +185,7 @@ progetto.its/
 │   ├── services/
 │   │   ├── modelRouter.ts   # Router e orchestratore AI
 │   │   ├── ragService.ts    # Servizio RAG ibrido (vector + TF-IDF)
-│   │   ├── promptBuilder.ts # Costruzione prompt sicuri
+│   │   ├── promptBuilder.ts # Costruzione prompt sicuri e citazioni obbligatorie
 │   │   ├── settingsService.ts # Gestione impostazioni AI
 │   │   └── intentClassifier.ts # Pre-classificazione intento
 │   ├── utils/               # Utility (sanitizzazione, trust score, routing)

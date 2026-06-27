@@ -1,6 +1,8 @@
 import { Embedder } from "./embedder";
 import { VectorStore } from "./vectorStore";
 import { RetrievalResult, RAGOptions } from "./types";
+import { filterByScore, selectDiverseSources } from "./scoring";
+import { deduplicateChunks } from "./deduplicate";
 
 export class Retriever {
   /**
@@ -16,14 +18,16 @@ export class Retriever {
   }
 
   /**
-   * Searches the vector store for the top-k most similar chunks.
+   * Searches the vector store for the top-k most similar chunks, applying filters,
+   * deduplication, and diversity selection (balancing document representation).
    */
   static async searchRelevantChunks(
     query: string,
     options: RAGOptions = {}
   ): Promise<RetrievalResult[]> {
-    const topK = options.topK ?? 3;
-    const threshold = options.similarityThreshold ?? 0.35; // Default safety threshold
+    const finalTopK = options.topK ?? 5;
+    const threshold = options.similarityThreshold ?? 0.30; // Min score threshold
+    const maxPerDoc = options.maxPerDocument ?? 2; // Max chunks per single document
 
     // 1. Generate normalized embedding for the query
     let queryEmbedding: number[];
@@ -35,7 +39,7 @@ export class Retriever {
     }
 
     const chunks = VectorStore.getChunks();
-    const results: RetrievalResult[] = [];
+    const rawResults: RetrievalResult[] = [];
 
     // 2. Compute similarity with each chunk
     for (const chunk of chunks) {
@@ -44,14 +48,21 @@ export class Retriever {
       }
 
       const score = this.dotProduct(queryEmbedding, chunk.embedding);
-      if (score >= threshold) {
-        results.push({ chunk, score });
-      }
+      rawResults.push({ chunk, score });
     }
 
-    // 3. Sort by score descending and return topK
-    return results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topK);
+    // 3. Sort raw matches descending
+    rawResults.sort((a, b) => b.score - a.score);
+
+    // 4. Apply min score filter
+    const filtered = filterByScore(rawResults, threshold);
+
+    // 5. Apply near-duplicate deduplication
+    const deduplicated = deduplicateChunks(filtered);
+
+    // 6. Apply diversity source balancing (cap per document and total topK)
+    const diverse = selectDiverseSources(deduplicated, finalTopK, maxPerDoc);
+
+    return diverse;
   }
 }

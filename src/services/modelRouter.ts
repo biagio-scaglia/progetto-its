@@ -6,6 +6,9 @@ import { TechnicalRoutingReason } from "../utils/routingReason";
 import { InputGuard } from "../security/inputGuard";
 import { RagGuard } from "../security/ragGuard";
 import { OutputGuard } from "../security/outputGuard";
+import { COPY_SECURITY, COPY_ERRORS } from "../config/microcopy";
+import { ContextBuilder } from "../rag/contextBuilder";
+import { extractUsedSources, formatSourcesForUi } from "../rag/citations";
 
 export interface GenerationResult {
   text: string;
@@ -18,6 +21,7 @@ export interface GenerationResult {
   ragRiskScore?: number;
   quarantinedChunksCount?: number;
   outputBlocked?: boolean;
+  fontiUsate?: any[];
 }
 
 export class ModelRouter {
@@ -92,7 +96,7 @@ export class ModelRouter {
         const duration = Date.now() - startTime;
         this.logMinimalMetadata(duration, "errore", inputRiskScore, 0, 0, 0, true);
         return {
-          text: "Nota di sicurezza: La tua richiesta ha attivato le policy di sicurezza di SDIT e non può essere elaborata.",
+          text: COPY_SECURITY.inputBlocked,
           modelUsed: "errore",
           reason: "system_error",
           durationMs: duration,
@@ -128,7 +132,7 @@ export class ModelRouter {
 
     // 5. Build prompt structure (incorporating RAG context if found)
     const ragActive = retrieved.length > 0;
-    const context = RagService.buildRagContext(retrieved);
+    const context = ContextBuilder.buildCitationAwareContext(retrieved);
     
     // Map chatHistory to providers message format (last 5 messages for context)
     const providerMessages = chatHistory.slice(-5).map(m => ({
@@ -171,6 +175,12 @@ export class ModelRouter {
       const duration = Date.now() - startTime;
       this.logMinimalMetadata(duration, modelUsed, inputRiskScore, ragRiskScore, retrieved.length, quarantinedChunksCount, outputBlocked);
 
+      let fontiUsate: any[] = [];
+      if (ragActive && !outputBlocked) {
+        const used = extractUsedSources(finalAnswer, retrieved);
+        fontiUsate = formatSourcesForUi(used);
+      }
+
       return {
         text: finalAnswer,
         modelUsed,
@@ -180,7 +190,8 @@ export class ModelRouter {
         inputRiskScore,
         ragRiskScore,
         quarantinedChunksCount,
-        outputBlocked
+        outputBlocked,
+        fontiUsate
       };
 
     } catch (finalError: any) {
@@ -189,7 +200,7 @@ export class ModelRouter {
       this.logMinimalMetadata(duration, "errore", inputRiskScore, ragRiskScore, retrieved.length, quarantinedChunksCount, false);
 
       return {
-        text: `Errore di connessione locale:\n${finalError.message || "Impossibile contattare il server Ollama."}\n\nAssicurati che Ollama sia in esecuzione (http://localhost:11434) e che il modello '${settings.qwenModel}' sia stato installato eseguendo nel terminale:\nollama run ${settings.qwenModel}`,
+        text: COPY_ERRORS.connectionError,
         modelUsed: "errore",
         reason: "system_error",
         durationMs: duration,

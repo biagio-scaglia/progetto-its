@@ -3,6 +3,7 @@ import { RagService } from "./ragService";
 import { ModelRouter } from "./modelRouter";
 import { IntentClassifier } from "./intentClassifier";
 import { SocialResponses } from "./socialResponses";
+import { COPY_SUGGESTIONS } from "../config/microcopy";
 
 export class ChatService {
   /**
@@ -37,8 +38,9 @@ export class ChatService {
     let durationMs = 0;
     let inputRiskScore = 0;
     let ragRiskScore = 0;
-    let quarantinedChunksCount = 0;
     let outputBlocked = false;
+    let quarantinedChunksCount = 0;
+    let fontiUsate: any[] | undefined = undefined;
 
     const isSocialOrGreeting = ["greeting", "small_talk", "thanks", "farewell", "capability_question", "ambiguous"].includes(intent);
 
@@ -70,6 +72,7 @@ export class ChatService {
       ragRiskScore = result.ragRiskScore || 0;
       quarantinedChunksCount = result.quarantinedChunksCount || 0;
       outputBlocked = result.outputBlocked || false;
+      fontiUsate = result.fontiUsate;
     } else {
       // PURE DOMAIN QUESTION
       const updatedHistory = [...history, userMessage].map(m => ({
@@ -88,6 +91,7 @@ export class ChatService {
       ragRiskScore = result.ragRiskScore || 0;
       quarantinedChunksCount = result.quarantinedChunksCount || 0;
       outputBlocked = result.outputBlocked || false;
+      fontiUsate = result.fontiUsate;
     }
 
     // 4. Contextual app deep-linking analyzer based on the answer/query text
@@ -121,7 +125,7 @@ export class ChatService {
     } else if (lowercaseAnswer.includes("impostazioni") || lowercaseQuery.includes("timeout") || lowercaseQuery.includes("ollama")) {
       linkInterno = "impostazioni";
       linkTesto = "Impostazioni di SDIT";
-      suggerimenti = ["Come configuro Ollama?", "Che modello consigli?"];
+      suggerimenti = [COPY_SUGGESTIONS.configEngine, COPY_SUGGESTIONS.recommendedSettings];
     }
 
     // 5. Create assistant message with observation metadata
@@ -140,7 +144,8 @@ export class ChatService {
       inputRiskScore,
       ragRiskScore,
       quarantinedChunksCount,
-      outputBlocked
+      outputBlocked,
+      fontiUsate
     };
 
     return {

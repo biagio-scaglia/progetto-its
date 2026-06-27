@@ -6,6 +6,7 @@ import { TTSButton } from "../components/ui/TTSButton";
 import { BRAND } from "../config/branding";
 import { AssistantMascot } from "../components/ui/AssistantMascot";
 import { SettingsService, AISettings } from "../services/settingsService";
+import { COPY_ASSISTANT, COPY_DEBUG } from "../config/microcopy";
 
 import { getFriendlyRoutingReason } from "../utils/routingReason";
 
@@ -146,10 +147,10 @@ export const Assistente: React.FC<AssistenteProps> = ({
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", minHeight: "36px" }}>
             <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-secondary)" }}>
-              Motore AI:
+              {COPY_ASSISTANT.engineLabel}
             </span>
             <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--color-primary)" }}>
-              Qwen (Locale)
+              {COPY_ASSISTANT.engineValue}
             </span>
           </div>
 
@@ -164,7 +165,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                 style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "var(--color-primary)" }}
               />
               <label htmlFor="safe-mode-toggle" style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-primary)", cursor: "pointer", userSelect: "none" }}>
-                Safe Mode
+                {COPY_ASSISTANT.protectionToggleLabel}
               </label>
             </div>
 
@@ -185,8 +186,8 @@ export const Assistente: React.FC<AssistenteProps> = ({
                   }}
                   aria-label="Livello di Protezione"
                 >
-                  <option value="standard">Standard</option>
-                  <option value="strict">Strict</option>
+                  <option value="standard">{COPY_ASSISTANT.protectionLevelNormal}</option>
+                  <option value="strict">{COPY_ASSISTANT.protectionLevelMax}</option>
                 </select>
 
                 <span style={{ color: "var(--color-border)" }}>|</span>
@@ -205,7 +206,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                     backgroundColor: showDebug ? "var(--color-primary-light)" : "transparent"
                   }}
                 >
-                  Debug {showDebug ? "ON" : "OFF"}
+                  {COPY_ASSISTANT.debugToggleLabel} {showDebug ? "ON" : "OFF"}
                 </button>
               </>
             )}
@@ -228,7 +229,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
               e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
-            Cancella cronologia chat
+            {COPY_ASSISTANT.clearButton}
           </Button>
         </div>
       </div>
@@ -336,6 +337,57 @@ export const Assistente: React.FC<AssistenteProps> = ({
                   </div>
                   {renderMessageText(msg)}
 
+                  {/* Fonti utilizzate in questa risposta */}
+                  {msg.fontiUsate && msg.fontiUsate.length > 0 && (
+                    <div style={{
+                      marginTop: "var(--space-md)",
+                      paddingTop: "var(--space-sm)",
+                      borderTop: "1px solid var(--color-border)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "var(--space-xs)"
+                    }}>
+                      <span style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        color: "var(--color-text-secondary)",
+                        display: "block",
+                        marginBottom: "2px"
+                      }}>
+                        📄 Fonti utilizzate:
+                      </span>
+                      <div style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "var(--space-xs)"
+                      }}>
+                        {msg.fontiUsate.map((source: any) => (
+                          <span
+                            key={source.visualId}
+                            title={`[Fonte ${source.visualId}] ${source.fileName} - ${source.section}\n\nEstratto:\n"${source.fullText}"`}
+                            style={{
+                              fontSize: "0.72rem",
+                              fontWeight: 600,
+                              padding: "4px 8px",
+                              borderRadius: "var(--radius-sm)",
+                              backgroundColor: "var(--color-primary-light)",
+                              color: "var(--color-primary)",
+                              border: "1px solid var(--color-border)",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center"
+                            }}
+                            onClick={() => {
+                              alert(`[Fonte ${source.visualId}] ${source.fileName}\nSezione: ${source.section}\n\nEstratto dai tuoi documenti:\n"${source.fullText}"`);
+                            }}
+                          >
+                            [{source.visualId}] {source.fileName}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* AI Observation Metadata Badges */}
                   {!isUser && (msg.modelloUsato || msg.quarantinedChunksCount || msg.outputBlocked) && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px", alignItems: "center" }}>
@@ -351,7 +403,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                             border: `1px solid ${msg.modelloUsato === "qwen" ? "rgba(124, 58, 237, 0.15)" : "var(--color-danger-border)"}`
                           }}
                         >
-                          Generato con {msg.modelloUsato === "qwen" ? "Qwen (Locale)" : "Errore"}
+                          {COPY_ASSISTANT.badgeLocalModel}
                         </span>
                       )}
 
@@ -367,7 +419,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                             border: "1px solid var(--color-success-border)"
                           }}
                         >
-                          RAG locale attivo
+                          {COPY_ASSISTANT.badgeDocumentsUsed}
                         </span>
                       )}
 
@@ -382,9 +434,9 @@ export const Assistente: React.FC<AssistenteProps> = ({
                             color: "rgb(245, 158, 11)",
                             border: "1px solid rgba(245, 158, 11, 0.2)"
                           }}
-                          title="RAG Guard ha rimosso e messo in quarantena chunk non sicuri contenenti tentativi di override."
+                          title={COPY_ASSISTANT.tooltipSuspiciousDetail}
                         >
-                          Contenuto sospetto filtrato ({msg.quarantinedChunksCount} chunk)
+                          {COPY_ASSISTANT.badgeSuspiciousFiltered}
                         </span>
                       ) : null}
 
@@ -400,7 +452,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                             border: "1px solid var(--color-danger-border)"
                           }}
                         >
-                          Blocco sicurezza attivo
+                          {COPY_ASSISTANT.badgeSecurityBlock}
                         </span>
                       )}
 
@@ -444,14 +496,14 @@ export const Assistente: React.FC<AssistenteProps> = ({
                       color: "var(--color-text-secondary)"
                     }}>
                       <div style={{ fontWeight: "bold", borderBottom: "1px solid var(--color-border)", paddingBottom: "4px", marginBottom: "4px", color: "var(--color-dark-blue)" }}>
-                        DIAGNOSTICA SICUREZZA AI LOCALE
+                        {COPY_DEBUG.panelTitle}
                       </div>
-                      <div>Modello Usato: <strong style={{ color: "var(--color-text-primary)" }}>{msg.modelloUsato || "Non specificato"}</strong></div>
-                      <div>Motivo Routing: <span style={{ color: "var(--color-text-primary)" }}>{msg.motivoRouting || "Non specificato"}</span></div>
-                      <div>Rischio Prompt Injection: <span style={{ color: msg.inputRiskScore && msg.inputRiskScore >= 0.4 ? "var(--color-danger)" : "var(--color-success)" }}>{msg.inputRiskScore !== undefined ? `${(msg.inputRiskScore * 100).toFixed(0)}%` : "0%"}</span></div>
-                      <div>RAG Chunks Quarantined: <span style={{ color: msg.quarantinedChunksCount && msg.quarantinedChunksCount > 0 ? "var(--color-warning)" : "var(--color-text-primary)" }}>{msg.quarantinedChunksCount || 0} chunk</span></div>
-                      <div>RAG Risk Score: <span>{msg.ragRiskScore !== undefined ? `${(msg.ragRiskScore * 100).toFixed(0)}%` : "0%"}</span></div>
-                      <div>Output Bloccato: <strong style={{ color: msg.outputBlocked ? "var(--color-danger)" : "var(--color-success)" }}>{msg.outputBlocked ? "SÌ" : "NO"}</strong></div>
+                      <div>{COPY_DEBUG.engineUsed} <strong style={{ color: "var(--color-text-primary)" }}>{msg.modelloUsato === "qwen" ? COPY_ASSISTANT.engineValue : (msg.modelloUsato || COPY_DEBUG.notSpecified)}</strong></div>
+                      <div>{COPY_DEBUG.routingCriteria} <span style={{ color: "var(--color-text-primary)" }}>{msg.motivoRouting ? getFriendlyRoutingReason(msg.motivoRouting) : COPY_DEBUG.notSpecified}</span></div>
+                      <div>{COPY_DEBUG.inputRisk} <span style={{ color: msg.inputRiskScore && msg.inputRiskScore >= 0.4 ? "var(--color-danger)" : "var(--color-success)" }}>{msg.inputRiskScore !== undefined ? `${(msg.inputRiskScore * 100).toFixed(0)}%` : "0%"}</span></div>
+                      <div>{COPY_DEBUG.docsExcluded} <span style={{ color: msg.quarantinedChunksCount && msg.quarantinedChunksCount > 0 ? "var(--color-warning)" : "var(--color-text-primary)" }}>{msg.quarantinedChunksCount || 0}</span></div>
+                      <div>{COPY_DEBUG.docsRisk} <span>{msg.ragRiskScore !== undefined ? `${(msg.ragRiskScore * 100).toFixed(0)}%` : "0%"}</span></div>
+                      <div>{COPY_DEBUG.outputBlocked} <strong style={{ color: msg.outputBlocked ? "var(--color-danger)" : "var(--color-success)" }}>{msg.outputBlocked ? COPY_DEBUG.yes : COPY_DEBUG.no}</strong></div>
                     </div>
                   )}
                 </div>
@@ -527,7 +579,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                 }}
               >
                 <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: "4px" }}>
-                  {BRAND.assistantName} sta pensando...
+                  {BRAND.assistantName} {COPY_ASSISTANT.thinkingLabel}
                 </div>
                 <div style={{ display: "flex", gap: "4px", padding: "4px 0" }}>
                   <span className="dot-loading" style={{ width: "8px", height: "8px", backgroundColor: "var(--color-primary)", borderRadius: "50%", display: "inline-block", animation: "bounce 1.4s infinite ease-in-out both" }}></span>
@@ -559,13 +611,13 @@ export const Assistente: React.FC<AssistenteProps> = ({
             <input
               type="text"
               className="assistant-form-input"
-              placeholder="Chiedi spiegazioni o indica cosa devi fare..."
+              placeholder={COPY_ASSISTANT.inputPlaceholder}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              aria-label="Messaggio per l'assistente di guida"
+              aria-label={COPY_ASSISTANT.inputAriaLabel}
             />
             <Button type="submit" disabled={!inputText.trim()} style={{ padding: "10px 20px" }}>
-              Invia <PaperPlaneIcon />
+              {COPY_ASSISTANT.sendButton} <PaperPlaneIcon />
             </Button>
           </form>
         </div>
@@ -614,14 +666,14 @@ export const Assistente: React.FC<AssistenteProps> = ({
               id="clear-dialog-title" 
               style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-dark-blue)", margin: "0 0 var(--space-sm) 0" }}
             >
-              Cancellazione cronologia chat
+              {COPY_ASSISTANT.clearDialogTitle}
             </h3>
             
             <p 
               id="clear-dialog-desc" 
               style={{ color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5", margin: "0 0 var(--space-lg) 0" }}
             >
-              Sei sicuro di voler cancellare l'intera cronologia di questa conversazione? Questa azione rimuoverà tutti i messaggi scambiati e non potrai più recuperarli.
+              {COPY_ASSISTANT.clearDialogDesc}
             </p>
             
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-sm)" }}>
@@ -631,14 +683,14 @@ export const Assistente: React.FC<AssistenteProps> = ({
                 onClick={() => setShowConfirmClear(false)}
                 style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem" }}
               >
-                Annulla
+                {COPY_ASSISTANT.clearCancel}
               </button>
               <button 
                 className="btn btn-danger" 
                 onClick={handleConfirmClear}
                 style={{ minHeight: "38px", padding: "8px 16px", fontSize: "0.9rem", backgroundColor: "var(--color-danger)" }}
               >
-                Cancella cronologia
+                {COPY_ASSISTANT.clearConfirm}
               </button>
             </div>
           </div>

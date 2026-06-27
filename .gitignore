@@ -40,3 +40,6 @@ backend/test.db
 
 # LLM Models
 /qwen2-7b/
+
+# RAG Auto-generated indices
+/src/rag/knowledge_index.json
