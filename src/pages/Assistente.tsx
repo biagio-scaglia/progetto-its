@@ -137,32 +137,33 @@ export const Assistente: React.FC<AssistenteProps> = ({
       width: "100%"
     }}>
       
-      <div className="card-header" style={{ padding: "0 0 var(--space-md) 0", borderBottom: "1px solid var(--color-border)", marginBottom: "var(--space-md)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-sm)" }}>
+      <div className="card-header" style={{ padding: "0 0 var(--space-sm) 0", borderBottom: "1px solid var(--color-border)", marginBottom: "var(--space-sm)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-sm)" }}>
         <div style={{ flex: 1, minWidth: "250px" }}>
-          <h2 className="page-title" style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "var(--space-sm)", marginBottom: "4px" }}>
-            <AssistantMascot size="md" /> {BRAND.assistantName}
+          <h2 className="page-title" style={{ fontSize: "1.25rem", display: "flex", alignItems: "center", gap: "var(--space-sm)", marginBottom: "2px" }}>
+            <AssistantMascot size="sm" /> {BRAND.assistantName}
           </h2>
-          <p className="page-subtitle" style={{ margin: 0 }}>Digita le tue domande per capire quale servizio attivare, quali scadenze rispettare o come raccogliere i documenti necessari.</p>
+          <p className="page-subtitle" style={{ margin: 0, fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>Digita le tue domande per capire quale servizio attivare, quali scadenze rispettare o come raccogliere i documenti necessari.</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", minHeight: "36px" }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-secondary)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-xs)", flexWrap: "wrap" }}>
+          {/* Engine Status */}
+          <div style={{ height: "34px", display: "flex", alignItems: "center", gap: "6px", padding: "0 12px", backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}>
+            <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-secondary)" }}>
               {COPY_ASSISTANT.engineLabel}
             </span>
-            <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--color-primary)" }}>
+            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--color-primary)" }}>
               {COPY_ASSISTANT.engineValue}
             </span>
           </div>
 
           {/* Safety Settings Dashboard */}
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", padding: "4px 10px", backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", minHeight: "36px" }}>
+          <div style={{ height: "34px", display: "flex", alignItems: "center", gap: "10px", padding: "0 12px", backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <input 
                 id="safe-mode-toggle"
                 type="checkbox"
                 checked={safetyConfig.safeMode}
                 onChange={e => handleSafetyChange("safeMode", e.target.checked)}
-                style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "var(--color-primary)" }}
+                style={{ width: "14px", height: "14px", cursor: "pointer", accentColor: "var(--color-primary)" }}
               />
               <label htmlFor="safe-mode-toggle" style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-primary)", cursor: "pointer", userSelect: "none" }}>
                 {COPY_ASSISTANT.protectionToggleLabel}
@@ -171,7 +172,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
 
             {safetyConfig.safeMode && (
               <>
-                <span style={{ color: "var(--color-border)" }}>|</span>
+                <span style={{ color: "var(--color-border)", fontSize: "0.8rem" }}>|</span>
                 <select
                   value={safetyConfig.protectionLevel}
                   onChange={e => handleSafetyChange("protectionLevel", e.target.value)}
@@ -182,7 +183,8 @@ export const Assistente: React.FC<AssistenteProps> = ({
                     border: "1px solid var(--color-border)",
                     borderRadius: "4px",
                     backgroundColor: "var(--color-surface)",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    height: "22px"
                   }}
                   aria-label="Livello di Protezione"
                 >
@@ -190,7 +192,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
                   <option value="strict">{COPY_ASSISTANT.protectionLevelMax}</option>
                 </select>
 
-                <span style={{ color: "var(--color-border)" }}>|</span>
+                <span style={{ color: "var(--color-border)", fontSize: "0.8rem" }}>|</span>
                 <button
                   type="button"
                   onClick={() => setShowDebug(!showDebug)}
@@ -203,7 +205,8 @@ export const Assistente: React.FC<AssistenteProps> = ({
                     cursor: "pointer",
                     padding: "2px 6px",
                     borderRadius: "4px",
-                    backgroundColor: showDebug ? "var(--color-primary-light)" : "transparent"
+                    backgroundColor: showDebug ? "var(--color-primary-light)" : "transparent",
+                    height: "22px"
                   }}
                 >
                   {COPY_ASSISTANT.debugToggleLabel} {showDebug ? "ON" : "OFF"}
@@ -212,15 +215,20 @@ export const Assistente: React.FC<AssistenteProps> = ({
             )}
           </div>
 
-          <Button 
-            variant="secondary" 
+          <button 
+            type="button"
             onClick={() => setShowConfirmClear(true)}
             style={{ 
-              borderColor: "var(--color-danger)", 
-              color: "var(--color-danger)", 
-              fontSize: "0.85rem", 
-              padding: "8px 16px",
-              minHeight: "36px"
+              height: "34px",
+              padding: "0 16px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--color-danger-border)",
+              backgroundColor: "transparent",
+              color: "var(--color-danger)",
+              fontSize: "0.8rem", 
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all var(--transition-fast)"
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = "var(--color-danger-bg)";
@@ -230,7 +238,7 @@ export const Assistente: React.FC<AssistenteProps> = ({
             }}
           >
             {COPY_ASSISTANT.clearButton}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -616,7 +624,18 @@ export const Assistente: React.FC<AssistenteProps> = ({
               onChange={(e) => setInputText(e.target.value)}
               aria-label={COPY_ASSISTANT.inputAriaLabel}
             />
-            <Button type="submit" disabled={!inputText.trim()} style={{ padding: "10px 20px" }}>
+            <Button 
+              type="submit" 
+              disabled={!inputText.trim()} 
+              style={{ 
+                height: "44px", 
+                padding: "0 20px", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
+                gap: "8px" 
+              }}
+            >
               {COPY_ASSISTANT.sendButton} <PaperPlaneIcon />
             </Button>
           </form>
