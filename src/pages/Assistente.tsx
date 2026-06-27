@@ -259,10 +259,10 @@ export const Assistente: React.FC<AssistenteProps> = ({
           style={{ 
             flex: 1, 
             overflowY: "auto",
-            padding: "var(--space-lg)",
+            padding: "var(--space-md)",
             display: "flex",
             flexDirection: "column",
-            gap: "var(--space-md)"
+            gap: "var(--space-sm)"
           }}
         >
           {messaggi.map((msg) => {

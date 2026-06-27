@@ -175,14 +175,21 @@ export class ModelRouter {
       const duration = Date.now() - startTime;
       this.logMinimalMetadata(duration, modelUsed, inputRiskScore, ragRiskScore, retrieved.length, quarantinedChunksCount, outputBlocked);
 
-      let fontiUsate: any[] = [];
-      if (ragActive && !outputBlocked) {
+      let fontiUsate: any[] | undefined = undefined;
+      let cleanAnswer = finalAnswer;
+      if (ragActive && retrieved.length > 0) {
         const used = extractUsedSources(finalAnswer, retrieved);
         fontiUsate = formatSourcesForUi(used);
+        
+        // Clean inline [Fonte N] text tags
+        cleanAnswer = finalAnswer
+          .replace(/\s*\[Fonte\s+\d+\]/gi, "")
+          .replace(/\s+([.,;?!])/g, "$1")
+          .trim();
       }
 
       return {
-        text: finalAnswer,
+        text: cleanAnswer,
         modelUsed,
         reason: finalReason,
         durationMs: duration,

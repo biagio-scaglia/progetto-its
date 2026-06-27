@@ -51,7 +51,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             id="main-content" 
             tabIndex={-1}
             style={currentPage === "assistente" ? { 
-              padding: "var(--space-md) var(--space-lg) var(--space-md) var(--space-lg)", 
+              padding: "var(--space-sm) var(--space-md) 0 var(--space-md)", 
               overflow: "hidden", 
               height: "100%",
               width: "100%",
