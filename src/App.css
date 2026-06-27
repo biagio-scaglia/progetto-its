@@ -2643,7 +2643,7 @@ body.accessibility-large-text .topbar-subtitle {
    Design System Polish & Micro-interactions additions
    ========================================================================== */
 
-/* Modern scrollbar customization for Webkit engines */
+/* Modern scrollbar customization for Webkit engines (hides clunky native arrows) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -2651,16 +2651,28 @@ body.accessibility-large-text .topbar-subtitle {
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  border: none;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 44, 102, 0.15);
-  border-radius: 4px;
-  transition: background var(--transition-fast);
+  background: rgba(0, 85, 179, 0.2);
+  border-radius: 10px;
+  border: none;
+  transition: background var(--transition-fast) ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 44, 102, 0.3);
+  background: rgba(0, 85, 179, 0.4);
+}
+
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0;
+  height: 0;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Global focus styling for accessibility */
