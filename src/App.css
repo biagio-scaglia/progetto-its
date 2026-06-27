@@ -2643,35 +2643,35 @@ body.accessibility-large-text .topbar-subtitle {
    Design System Polish & Micro-interactions additions
    ========================================================================== */
 
-/* Modern scrollbar customization for Webkit engines (hides clunky native arrows) */
-::-webkit-scrollbar {
+/* Modern scrollbar customization for Webkit engines (hides clunky native arrows on all elements) */
+*::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 4px; /* sleeker horizontal scrollbar */
 }
 
-::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: transparent;
   border: none;
 }
 
-::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
   background: rgba(0, 85, 179, 0.2);
   border-radius: 10px;
   border: none;
   transition: background var(--transition-fast) ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 85, 179, 0.4);
 }
 
-::-webkit-scrollbar-button {
+*::-webkit-scrollbar-button {
   display: none !important;
   width: 0;
   height: 0;
 }
 
-::-webkit-scrollbar-corner {
+*::-webkit-scrollbar-corner {
   background: transparent;
 }
 
